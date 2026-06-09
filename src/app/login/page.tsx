@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { loginAction, type LoginState } from "@/server/actions/auth";
+import { PasswordField } from "@/components/PasswordField";
 
 const initial: LoginState = {};
 
@@ -44,16 +45,7 @@ export default function LoginPage() {
           />
         </label>
 
-        <label style={{ fontSize: 12.5, fontWeight: 600, color: "#5b6573" }}>
-          パスワード
-          <input
-            name="password"
-            type="password"
-            autoComplete="current-password"
-            required
-            style={inputStyle}
-          />
-        </label>
+        <PasswordField label="パスワード" name="password" autoComplete="current-password" />
 
         {state.error && (
           <div

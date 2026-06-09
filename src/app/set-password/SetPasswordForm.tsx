@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useActionState } from "react";
 import { setPasswordAction, type SetPasswordState } from "@/server/actions/password";
+import { PasswordField } from "@/components/PasswordField";
 
 const initial: SetPasswordState = {};
 
@@ -67,17 +68,12 @@ export default function SetPasswordForm({ token }: { token: string }) {
         ) : (
           <form action={formAction}>
             <input type="hidden" name="token" value={token} />
-            <label style={{ fontSize: 12.5, fontWeight: 600, color: "#5b6573" }}>
-              新しいパスワード（8文字以上）
-              <input
-                name="password"
-                type="password"
-                autoComplete="new-password"
-                required
-                minLength={8}
-                style={inputStyle}
-              />
-            </label>
+            <PasswordField
+              label="新しいパスワード（8文字以上）"
+              name="password"
+              autoComplete="new-password"
+              minLength={8}
+            />
 
             {!token && (
               <div style={errorBox}>リンクが無効です。メールのリンクから再度お試しください。</div>
@@ -107,17 +103,6 @@ export default function SetPasswordForm({ token }: { token: string }) {
     </main>
   );
 }
-
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  height: 42,
-  border: "1px solid #dfe4ec",
-  borderRadius: 9,
-  padding: "0 13px",
-  fontSize: 14,
-  outline: "none",
-  margin: "6px 0 16px",
-};
 
 const errorBox: React.CSSProperties = {
   background: "#fdecec",
