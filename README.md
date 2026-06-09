@@ -123,6 +123,8 @@ Quy ước code: [docs/CONVENTIONS.md](docs/CONVENTIONS.md).
 
 ## 🗺️ Roadmap
 
+Kế hoạch chi tiết + truy vết requirement (FR/SC → phase): [docs/ROADMAP.md](docs/ROADMAP.md).
+
 - [x] Phase 1 — Thiết kế DB (schema + ER)
 - [x] Phase 2 — Seed dữ liệu mẫu
 - [x] Hạ tầng — môi trường, scaffold Next.js, convention, Git + CI
