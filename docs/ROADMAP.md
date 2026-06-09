@@ -15,8 +15,14 @@ Kế hoạch chi tiết từng phase + truy vết requirement để kiểm tra c
 | 3 | Auth + RBAC | ✅ Xong (chờ review) |
 | 4 | Backend (API/Server Actions + logic 視聴率/進捗) | ⏳ |
 | 5 | Frontend (port UI 2 site) | ⏳ |
-| 6 | Video AWS S3 + CloudFront | ⏳ |
+| 6A | Video — Storage local (dev) + player + ghi 視聴ログ | ⏳ |
+| 6B | Video — S3 + CloudFront (chỉ swap driver) | ⏳ (chờ tài khoản AWS) |
 | 7 | Hoàn thiện phi chức năng + deploy | ⏳ |
+
+> **Storage abstraction:** dùng interface `StorageProvider` (driver `local` giờ, `s3` sau).
+> `videos.url` luôn lưu **key** (vd `videos/v101.mp4`); driver resolve ra URL phát.
+> → Lên AWS = thêm driver + config env, KHÔNG sửa UI/DB/logic. KHÔNG dùng base64 cho video.
+> Video có thể làm sớm (6A) ngay sau Phase 4 nếu muốn, không cần chờ AWS.
 
 ---
 
@@ -31,8 +37,8 @@ Kế hoạch chi tiết từng phase + truy vết requirement để kiểm tra c
 | FR-05 | 学生アカウント発行 | 4, 5B | [ ] |
 | FR-06 | 法人プロフィール管理（即時反映） | 4, 5C | [ ] |
 | FR-07 | コース管理 | 4, 5B | [ ] |
-| FR-08 | 動画アップロード・管理 | 4, 5B, 6 | [ ] |
-| FR-09 | 動画視聴（全コース） | 5D, 6 | [ ] |
+| FR-08 | 動画アップロード・管理 | 4, 5B, 6A | [ ] |
+| FR-09 | 動画視聴（全コース） | 5D, 6A | [ ] |
 | FR-10 | 視聴完了判定（視聴率100%） | 4 | [ ] |
 | FR-11 | 進捗自動計算 | 4 | [ ] |
 | FR-12 | 進捗ダッシュボード | 5B, 5C, 5D | [ ] |
@@ -49,7 +55,7 @@ Kế hoạch chi tiết từng phase + truy vết requirement để kiểm tra c
 | SC-A04 | 法人管理 (有効/停止 cascade, xoá chặn nếu có 学生, 住所検索) | 5B | [ ] |
 | SC-A05 | 学生管理 (status pulldown, 修了コース数, bulk status/delete) | 5B | [ ] |
 | SC-A06 | コース管理 + コース詳細 (bỏ カテゴリ/CARE, thumbnail bắt buộc, drag video, publish toggle) | 5B | [ ] |
-| SC-A07 | 動画アップロード (レッスン名/詳細内容/動画 MP4·MOV) | 5B, 6 | [ ] |
+| SC-A07 | 動画アップロード (レッスン名/詳細内容/動画 MP4·MOV) | 5B, 6A | [ ] |
 | SC-A08 | 学生進捗一覧 + 詳細 (修了コース数 N/7, 5/7) | 5B | [ ] |
 | ~~SC-A09~~ | ~~システム設定~~ | — | ❌ Đã bỏ |
 
@@ -68,7 +74,7 @@ Kế hoạch chi tiết từng phase + truy vết requirement để kiểm tra c
 |---|---|---|---|
 | SC-U01 | ログイン | 3, 5A | [ ] |
 | SC-U05 | 学生ホーム (全コース, 続きから, 未学習 example) | 5D | [ ] |
-| SC-U06 | 動画視聴 (ghi 視聴ログ, 100%完了, bỏ hiển thị 視聴率%, block info) | 5D, 6 | [ ] |
+| SC-U06 | 動画視聴 (ghi 視聴ログ, 100%完了, bỏ hiển thị 視聴率%, block info) | 5D, 6A | [ ] |
 | SC-U07 | マイ進捗 (3 nhóm 修了/受講中/未学習 + thanh phân bố) | 5D | [ ] |
 | — | プロフィール (avatar dropdown, sửa+đồng bộ, 所属法人 khoá, đổi MK) | 5C/5D | [ ] |
 
@@ -188,26 +194,38 @@ Kế hoạch chi tiết từng phase + truy vết requirement để kiểm tra c
 
 ---
 
-## 6. PHASE 6 — Video (AWS S3 + CloudFront)
+## 6. PHASE 6 — Video
 
-**Mục tiêu:** Upload & phát video an toàn, ghi tiến độ thật.
+**Mục tiêu:** Upload & phát video an toàn (bảo vệ), ghi tiến độ thật.
 **Liên quan:** FR-08, FR-09, FR-10 · 非機能 (CDN, 署名付きURL, 動画保護).
 
-### Task
-- [ ] Cài AWS SDK (`@aws-sdk/client-s3`, `@aws-sdk/s3-request-presigner`, `@aws-sdk/cloudfront-signer`)
-- [ ] `src/lib/aws/s3.ts` — presigned URL **upload** (admin tải video lên S3)
-- [ ] `src/lib/aws/cloudfront.ts` — **Signed URL** phát video (chống tải lậu)
-- [ ] Admin upload (SC-A07): tải MP4/MOV, lấy `duration_sec`, lưu key vào `videos.url`
-- [ ] 学生 視聴: phát qua CloudFront signed URL; player ghi `max_position` → `upsertViewLog`
+> Tách thành 6A (local, làm ngay không cần AWS) và 6B (S3/CloudFront, swap driver).
+> Cốt lõi: **lớp trừu tượng Storage** để app không phụ thuộc nơi lưu video.
+
+### 6A — Storage local (dev) + player + tiến độ
+- [ ] `src/lib/storage/types.ts` — interface `StorageProvider { getUploadTarget(key), getPlaybackUrl(key), save(...) }`
+- [ ] `src/lib/storage/local.ts` — driver local: lưu file vào `storage/videos/` (gitignore)
+- [ ] `src/lib/storage/index.ts` — chọn driver theo env `STORAGE_DRIVER` (mặc định `local`)
+- [ ] Route upload (admin): nhận MP4/MOV + `duration_sec` (lấy ở client qua `loadedmetadata`), lưu key vào `videos.url`
+- [ ] Route phát `/api/videos/[id]/stream` — **có auth** (mô phỏng 動画保護) + **HTTP Range (206)** để tua được
+- [ ] 学生 視聴: player phát qua route, ghi `max_position` → `upsertViewLog` (Phase 4)
 - [ ] "Xem tiếp từ chỗ cũ" dùng `max_position`
-- [ ] Cấu hình env AWS (S3 bucket, CloudFront domain/key-pair/private key)
 
-### Acceptance
-- [ ] Upload video chạy; không truy cập trực tiếp S3 (chỉ qua signed URL)
-- [ ] Xem video → 視聴率 tăng; chạm 100% → completed; 進捗 cập nhật
-- [ ] Reload → xem tiếp đúng vị trí
+**Acceptance 6A**
+- [ ] Upload chạy; video chỉ xem được khi đã đăng nhập (không truy cập trực tiếp file)
+- [ ] Tua (seek) hoạt động (Range 206)
+- [ ] Xem → 視聴率 tăng; chạm 100% → completed; 進捗 cập nhật; reload → xem tiếp đúng vị trí
 
-**⏸️ Review checkpoint sau Phase 6.**
+### 6B — S3 + CloudFront (khi có tài khoản AWS)
+- [ ] Cài `@aws-sdk/client-s3`, `@aws-sdk/s3-request-presigner`, `@aws-sdk/cloudfront-signer`
+- [ ] `src/lib/storage/s3.ts` — driver S3: presigned PUT (upload) + CloudFront **Signed URL** (phát)
+- [ ] Đổi `STORAGE_DRIVER=s3` + cấu hình env (bucket, CloudFront domain/key-pair/private key)
+- [ ] KHÔNG sửa UI/DB/logic — chỉ swap driver
+
+**Acceptance 6B**
+- [ ] Không truy cập trực tiếp S3 (chỉ qua signed URL); mọi hành vi như 6A
+
+**⏸️ Review checkpoint sau 6A và sau 6B.**
 
 ---
 

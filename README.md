@@ -131,4 +131,5 @@ Kế hoạch chi tiết + truy vết requirement (FR/SC → phase): [docs/ROADMA
 - [ ] Phase 3 — Auth + RBAC (3 vai trò)
 - [ ] Phase 4 — Backend API / Server Actions (CRUD + tính 視聴率/進捗)
 - [ ] Phase 5 — Frontend (port UI: 管理サイト + 利用者サイト)
-- [ ] Phase 6 — Video AWS S3 + CloudFront + ghi 視聴ログ
+- [ ] Phase 6A — Video: storage local (dev) + player + ghi 視聴ログ
+- [ ] Phase 6B — Video: S3 + CloudFront (swap driver, khi có AWS)
