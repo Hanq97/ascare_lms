@@ -8,69 +8,75 @@ Schema thực thi: [`prisma/schema.prisma`](../prisma/schema.prisma).
 
 ```mermaid
 erDiagram
-    Admin {
+    admins {
         string id PK
         string name "氏名"
-        string nameKana "氏名カナ"
+        string name_kana "氏名カナ"
         string email UK "login ID"
-        string passwordHash "nullable"
+        string password_hash "nullable"
         enum   status "ACTIVE/INACTIVE"
+        timestamp last_login_at
     }
-    Corporation {
+    corporations {
         string id PK
         string name "法人名"
-        string nameKana "法人名カナ"
-        string personName "担当者名"
-        string personKana "担当者名カナ"
+        string name_kana "法人名カナ"
+        string person_name "担当者名"
+        string person_kana "担当者名カナ"
         string email UK "login ID, 編集不可"
+        string password_hash "nullable"
         string phone "電話番号"
         string postal "郵便番号"
         string address "住所"
         enum   status "ACTIVE/SUSPENDED"
     }
-    Student {
+    students {
         string id PK
-        string corpId FK
+        string corp_id FK
         string name "氏名"
-        string nameKana "氏名カナ"
+        string name_kana "氏名カナ"
         string email UK "login ID, 編集不可"
+        string password_hash "nullable"
         string country "国籍"
         enum   status "ACTIVE/INACTIVE"
     }
-    Course {
+    courses {
         string id PK
         string title "タイトル"
         string description "説明"
         enum   status "DRAFT/PUBLISHED"
         int    order "並び順"
-        string thumbnailUrl "必須"
+        string thumbnail_url "必須"
     }
-    Video {
+    videos {
         string id PK
-        string courseId FK
+        string course_id FK
         string title "レッスン名"
         string detail "詳細内容"
-        string url "S3/CloudFront"
-        int    durationSec "再生時間"
+        string url "S3/CloudFront key"
+        int    duration_sec "再生時間(秒)"
         int    order "順番"
     }
-    ViewLog {
+    view_logs {
         string id PK
-        string studentId FK
-        string videoId FK
-        int    maxPosition "最大到達位置(秒)"
-        int    watchedPct "視聴率 0-100"
+        string student_id FK
+        string video_id FK
+        int    max_position "最大到達位置(秒)"
+        int    watched_pct "視聴率 0-100"
         bool   completed "完了"
     }
 
-    Corporation ||--o{ Student : "1法人 1-N 学生"
-    Course      ||--o{ Video   : "1コース 1-N 動画"
-    Student     ||--o{ ViewLog : "視聴"
-    Video       ||--o{ ViewLog : "視聴される"
+    corporations ||--o{ students  : "1法人 1-N 学生"
+    courses      ||--o{ videos    : "1コース 1-N 動画"
+    students     ||--o{ view_logs : "視聴"
+    videos       ||--o{ view_logs : "視聴される"
 ```
 
+> Tên bảng/cột ở ER = **snake_case (DB thật)**. Field Prisma tương ứng là camelCase (vd `name_kana` ↔ `nameKana`) — xem [`prisma/schema.prisma`](../prisma/schema.prisma).
 > 学生 xem được **mọi** コース công khai → KHÔNG có bảng gán khóa (course ↔ student).
 > 法人 chỉ giữ quan hệ với 学生; toàn bộ コース là dùng chung.
+
+Bảng phụ: `verification_tokens` (đặt/đặt-lại mật khẩu) · `audit_logs` (操作ログ FR-13).
 
 ## Mapping: 要件 mục 8 ↔ design `data.jsx` ↔ Prisma
 
