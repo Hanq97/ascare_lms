@@ -39,7 +39,7 @@ export default function LoginPage() {
             type="email"
             autoComplete="email"
             required
-            defaultValue=""
+            defaultValue={state.email ?? ""}
             style={inputStyle}
           />
         </label>

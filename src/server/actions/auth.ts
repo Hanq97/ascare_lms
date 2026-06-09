@@ -12,19 +12,23 @@ const loginSchema = z.object({
   password: z.string().min(1, "パスワードを入力してください。"),
 });
 
-export type LoginState = { error?: string };
+export type LoginState = { error?: string; email?: string };
 
 export async function loginAction(_prev: LoginState, formData: FormData): Promise<LoginState> {
+  const rawEmail = (formData.get("email") as string | null) ?? "";
   const parsed = loginSchema.safeParse({
-    email: formData.get("email"),
+    email: rawEmail,
     password: formData.get("password"),
   });
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "入力内容を確認してください。" };
+    return {
+      error: parsed.error.issues[0]?.message ?? "入力内容を確認してください。",
+      email: rawEmail,
+    };
   }
 
   const result = await authenticate(parsed.data.email, parsed.data.password);
-  if (!result.ok) return { error: result.error };
+  if (!result.ok) return { error: result.error, email: rawEmail };
 
   await setSession(result.user);
   await prisma.auditLog.create({
