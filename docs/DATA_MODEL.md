@@ -1,0 +1,127 @@
+# ASCare LMS — Data Model & ER
+
+介護分野 外国人材向け 動画学習・進捗管理プラットフォーム
+Nguồn: `要件定義書 v1.2` (mục 8) + design `ASCare_LMS` + refinement từ chat (2026-06-09).
+Schema thực thi: [`prisma/schema.prisma`](../prisma/schema.prisma).
+
+## ER Diagram
+
+```mermaid
+erDiagram
+    Admin {
+        string id PK
+        string name "氏名"
+        string nameKana "氏名カナ"
+        string email UK "login ID"
+        string passwordHash "nullable"
+        enum   status "ACTIVE/INACTIVE"
+    }
+    Corporation {
+        string id PK
+        string name "法人名"
+        string nameKana "法人名カナ"
+        string personName "担当者名"
+        string personKana "担当者名カナ"
+        string email UK "login ID, 編集不可"
+        string phone "電話番号"
+        string postal "郵便番号"
+        string address "住所"
+        enum   status "ACTIVE/SUSPENDED"
+    }
+    Student {
+        string id PK
+        string corpId FK
+        string name "氏名"
+        string nameKana "氏名カナ"
+        string email UK "login ID, 編集不可"
+        string country "国籍"
+        enum   status "ACTIVE/INACTIVE"
+    }
+    Course {
+        string id PK
+        string title "タイトル"
+        string description "説明"
+        enum   status "DRAFT/PUBLISHED"
+        int    order "並び順"
+        string thumbnailUrl "必須"
+    }
+    Video {
+        string id PK
+        string courseId FK
+        string title "レッスン名"
+        string detail "詳細内容"
+        string url "S3/CloudFront"
+        int    durationSec "再生時間"
+        int    order "順番"
+    }
+    ViewLog {
+        string id PK
+        string studentId FK
+        string videoId FK
+        int    maxPosition "最大到達位置(秒)"
+        int    watchedPct "視聴率 0-100"
+        bool   completed "完了"
+    }
+
+    Corporation ||--o{ Student : "1法人 1-N 学生"
+    Course      ||--o{ Video   : "1コース 1-N 動画"
+    Student     ||--o{ ViewLog : "視聴"
+    Video       ||--o{ ViewLog : "視聴される"
+```
+
+> 学生 xem được **mọi** コース công khai → KHÔNG có bảng gán khóa (course ↔ student).
+> 法人 chỉ giữ quan hệ với 学生; toàn bộ コース là dùng chung.
+
+## Mapping: 要件 mục 8 ↔ design `data.jsx` ↔ Prisma
+
+| 要件 thực thể | design (data.jsx) | Prisma model | Ghi chú thay đổi |
+|---|---|---|---|
+| 管理者 | `ADMINS` | `Admin` | Bỏ `role/権限` (luôn admin); login = email; set PW trực tiếp |
+| 法人 | `CORPS` | `Corporation` | Thêm `nameKana, personKana, postal`; status `有効/停止`; login = email |
+| 学生 | `STUDENTS` | `Student` | `country`=国籍; login = email; status `有効/無効` |
+| (法人スタッフ) | `STAFF` | **— (bỏ)** | 法人 = 1 account nhiều người login → không tách Staff |
+| コース | `COURSES` | `Course` | **Bỏ `cat/カテゴリ` và `code` (CARE xx)**; default `非公開`; `thumbnailUrl` bắt buộc |
+| 動画 | `videos[]` | `Video` | `title`=レッスン名, thêm `detail`=詳細内容 |
+| 視聴ログ | (suy ra từ `prog`) | `ViewLog` | Phương án A — xem dưới |
+
+Bảng phụ thêm: `VerificationToken` (set/reset mật khẩu qua mail), `AuditLog` (FR-13 監査, Should).
+
+## Logic tiến độ (要件 mục 9 — Phương án A)
+
+Tiến độ **KHÔNG lưu trong DB**, tính động từ `ViewLog` (giống các hàm trong `data.jsx`):
+
+```
+# 1 video
+watchedPct = round(maxPosition / video.durationSec * 100)
+completed  = watchedPct >= 100                      # 視聴率100% = 完了
+
+# 1 khóa (chỉ tính video của khóa)
+courseProgress(student, course) = (số video completed) / (tổng video) * 100
+
+# tổng thể (trung bình các khóa 公開)
+overallProgress(student) = avg( courseProgress trên mọi PUBLISHED course )
+
+# phân loại khóa cho 学生 (マイ進捗)
+修了 = courseProgress == 100
+受講中 = 0 < courseProgress < 100
+未学習 = courseProgress == 0
+```
+
+`maxPosition` cũng dùng cho "xem tiếp từ chỗ cũ" (続きから再生).
+
+## Quy tắc nghiệp vụ quan trọng (ràng buộc tầng app)
+
+| Quy tắc | Mô tả |
+|---|---|
+| 法人 停止 cascade | `Corporation.status = SUSPENDED` → coi như mọi 学生 trực thuộc bị khoá đăng nhập |
+| Xoá 法人 | Chặn nếu còn 学生 (`onDelete: Restrict`) |
+| email bất biến | email (login) của 法人/学生 không sửa khi edit; chỉ admin reset login |
+| PW set qua mail | Tạo 法人/学生 → gửi mail (`VerificationToken`) để tự đặt mật khẩu; admin set PW trực tiếp |
+| 学生 ↔ コース | Không gán; mọi 学生 xem mọi `PUBLISHED` course |
+| Đồng bộ tức thời | 1 CSDL duy nhất → sửa hồ sơ 法人/学生 phản ánh ngay mọi nơi (gồm admin) |
+
+## Login / Auth
+
+- Tất cả role đăng nhập bằng **email + password** (3 bảng tách biệt, email unique trong từng bảng).
+- `passwordHash` băm bằng bcrypt/argon2.
+- 法人 cho phép nhiều phiên đăng nhập đồng thời (session không khóa single-device).

@@ -1,0 +1,211 @@
+// ============================================================
+//  ASCare LMS — Prisma schema
+//  介護分野 外国人材向け 動画学習・進捗管理プラットフォーム
+//
+//  Nguồn: 要件定義書 v1.2 (mục 8 データモデル) + design ASCare_LMS
+//  + các refinement từ chat transcript (đã chốt 2026-06-09).
+//
+//  Naming (xem docs/CONVENTIONS.md):
+//   - Model PascalCase, field camelCase.
+//   - Bảng = snake_case số nhiều (@@map); cột = snake_case (@map).
+//
+//  Quyết định chính:
+//   - Login bằng EMAIL (chat: "ログインID → email"). Admin set/reset login.
+//   - 視聴完了 = Phương án A: watchedPct = maxPosition / durationSec.
+//   - 法人 = 1 account, nhiều người đăng nhập đồng thời (KHÔNG có bảng Staff).
+//   - 法人 停止 (SUSPENDED) → khoá luôn 学生 trực thuộc (xử lý ở tầng app/logic).
+//   - 進捗 (tiến độ) KHÔNG lưu — tính động từ ViewLog.
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------- Enums ----------
+
+/// Trạng thái dùng cho 管理者 / 学生
+enum AccountStatus {
+  ACTIVE // 有効
+  INACTIVE // 無効
+}
+
+/// Trạng thái 法人 — SUSPENDED (停止) sẽ cascade khoá 学生 trực thuộc
+enum CorpStatus {
+  ACTIVE // 有効
+  SUSPENDED // 停止
+}
+
+/// Trạng thái công khai của コース — mặc định DRAFT (非公開)
+enum CourseStatus {
+  DRAFT // 非公開
+  PUBLISHED // 公開
+}
+
+/// Loại token (đặt mật khẩu lần đầu qua mail / reset mật khẩu)
+enum TokenPurpose {
+  PASSWORD_SETUP // メールでパスワード設定
+  PASSWORD_RESET // パスワード再設定
+}
+
+// ---------- 管理者 / Admin ----------
+// Quản trị site quản trị. Tạo bằng form 氏名/氏名カナ/email, set password trực tiếp.
+// KHÔNG có 権限 (luôn là 管理者).
+model Admin {
+  id           String        @id @default(cuid())
+  name         String // 氏名
+  nameKana     String        @map("name_kana") // 氏名（カナ）
+  email        String        @unique // dùng làm login ID
+  passwordHash String?       @map("password_hash") // null cho tới khi đặt mật khẩu
+  status       AccountStatus @default(ACTIVE)
+  lastLoginAt  DateTime?     @map("last_login_at")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+
+  @@map("admins")
+}
+
+// ---------- 法人 / Corporation ----------
+// 1法人 = 1 account (nhiều người đăng nhập đồng thời). Login info do admin set.
+// email khoá khi edit. status SUSPENDED → 学生 trực thuộc bị khoá.
+model Corporation {
+  id           String     @id @default(cuid())
+  name         String // 法人名
+  nameKana     String     @map("name_kana") // 法人名（カナ）
+  personName   String     @map("person_name") // 担当者名
+  personKana   String     @map("person_kana") // 担当者名（カナ）
+  email        String     @unique // login ID (編集不可)
+  passwordHash String?    @map("password_hash") // null cho tới khi 法人 đặt mật khẩu
+  phone        String // 電話番号
+  postal       String // 郵便番号
+  address      String // 住所
+  status       CorpStatus @default(ACTIVE)
+  lastLoginAt  DateTime?  @map("last_login_at")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  students Student[]
+
+  @@map("corporations")
+}
+
+// ---------- 学生 / Student ----------
+// Gắn 1 法人. Xem được mọi コース công khai (không gán khóa).
+model Student {
+  id           String        @id @default(cuid())
+  corpId       String        @map("corp_id")
+  name         String // 氏名
+  nameKana     String        @map("name_kana") // 氏名（カナ）
+  email        String        @unique // login ID (編集不可)
+  passwordHash String?       @map("password_hash") // null cho tới khi đặt mật khẩu
+  country      String // 国籍
+  status       AccountStatus @default(ACTIVE)
+  lastLoginAt  DateTime?     @map("last_login_at")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+
+  corp     Corporation @relation(fields: [corpId], references: [id], onDelete: Restrict)
+  viewLogs ViewLog[]
+
+  @@index([corpId])
+  @@map("students")
+}
+
+// ---------- コース / Course ----------
+// Gom các 動画. Bỏ カテゴリ. Mặc định 非公開. thumbnail bắt buộc.
+model Course {
+  id           String       @id @default(cuid())
+  title        String // タイトル
+  description  String       @default("") // 説明
+  status       CourseStatus @default(DRAFT)
+  order        Int          @default(0) // 並び順
+  thumbnailUrl String       @map("thumbnail_url") // サムネイル (bắt buộc khi tạo)
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+
+  videos Video[]
+
+  @@index([order])
+  @@map("courses")
+}
+
+// ---------- 動画 / Video ----------
+// Thuộc 1 コース. レッスン名 + 詳細内容 + file (S3) + 再生時間 + 順番.
+model Video {
+  id           String   @id @default(cuid())
+  courseId     String   @map("course_id")
+  title        String // レッスン名 / タイトル
+  detail       String   @default("") // 詳細内容
+  url          String // S3 key / URL phát (CloudFront signed)
+  durationSec  Int      @map("duration_sec") // 再生時間 (giây) — mẫu số tính 視聴率
+  order        Int      @default(0) // 順番
+  thumbnailUrl String?  @map("thumbnail_url") // サムネ (tùy chọn)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  course   Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  viewLogs ViewLog[]
+
+  @@index([courseId, order])
+  @@map("videos")
+}
+
+// ---------- 視聴ログ / ViewLog (Phương án A) ----------
+// 1 bản ghi / (学生 × 動画). Lưu vị trí xa nhất; hỗ trợ "xem tiếp từ chỗ cũ".
+//   watchedPct = round(maxPosition / video.durationSec * 100)
+//   completed  = watchedPct >= 100
+model ViewLog {
+  id          String   @id @default(cuid())
+  studentId   String   @map("student_id")
+  videoId     String   @map("video_id")
+  maxPosition Int      @default(0) @map("max_position") // 最大到達位置 (giây)
+  watchedPct  Int      @default(0) @map("watched_pct") // 視聴率 0-100
+  completed   Boolean  @default(false) // 完了フラグ (視聴率100%)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  video   Video   @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, videoId])
+  @@index([studentId])
+  @@index([videoId])
+  @@map("view_logs")
+}
+
+// ---------- パスワード設定/再設定トークン ----------
+// Hỗ trợ flow "gửi mail để user tự set mật khẩu" + admin reset.
+// userType: "ADMIN" | "CORP" | "STUDENT" (không FK cứng để dùng chung).
+model VerificationToken {
+  id        String       @id @default(cuid())
+  token     String       @unique
+  purpose   TokenPurpose
+  userType  String       @map("user_type") // ADMIN | CORP | STUDENT
+  userId    String       @map("user_id")
+  expiresAt DateTime     @map("expires_at")
+  usedAt    DateTime?    @map("used_at")
+  createdAt DateTime     @default(now()) @map("created_at")
+
+  @@index([userType, userId])
+  @@map("verification_tokens")
+}
+
+// ---------- 操作ログ・監査 / AuditLog (FR-13, Should) ----------
+// Ghi login / 視聴 ... Hiển thị trên dashboard đã bị bỏ, nhưng vẫn lưu phục vụ kiểm toán.
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorType String   @map("actor_type") // ADMIN | CORP | STUDENT | SYSTEM
+  actorId   String?  @map("actor_id")
+  action    String // LOGIN | LOGOUT | VIEW_VIDEO | CREATE_xxx ...
+  target    String? // mô tả đối tượng tác động
+  meta      Json? // dữ liệu bổ sung
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([actorType, actorId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}

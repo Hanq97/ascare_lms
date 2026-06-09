@@ -1,0 +1,22 @@
+# Postgres local cho ASCare LMS — chạy: docker compose up -d
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: ascare_lms_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ascare
+      POSTGRES_PASSWORD: ascare_dev_pw
+      POSTGRES_DB: ascare_lms
+    ports:
+      - "5432:5432"
+    volumes:
+      - ascare_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ascare -d ascare_lms"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  ascare_pgdata:
