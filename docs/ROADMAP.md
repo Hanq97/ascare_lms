@@ -13,7 +13,7 @@ Kế hoạch chi tiết từng phase + truy vết requirement để kiểm tra c
 |---|---|---|
 | 0 | Nền tảng (DB, seed, scaffold, convention, Git/CI, README) | ✅ Xong |
 | 3 | Auth + RBAC | ✅ Xong (chờ review) |
-| 4A | Backend — Hạ tầng (zod, ActionResult, mail stub, token PW) | ⏳ |
+| 4A | Backend — Hạ tầng (ActionResult, audit, mail Mailpit, token PW) | ✅ Xong (chờ review) |
 | 4B | Backend — Logic 視聴率/進捗 + ViewLog (+ Vitest) | ⏳ |
 | 4C | Backend — CRUD tài khoản (admin/法人/学生 + cascade) | ⏳ |
 | 4D | Backend — CRUD nội dung + profile + read queries | ⏳ |
@@ -37,7 +37,7 @@ Kế hoạch chi tiết từng phase + truy vết requirement để kiểm tra c
 | ID | Chức năng | Phase | Trạng thái |
 |---|---|---|---|
 | FR-01 | ログイン・ログアウト | 3 | [x] |
-| FR-02 | パスワード再設定（管理者リセット） | 3, 4 | [~] (chặn login theo status xong; reset/đặt MK qua mail ở Phase 4) |
+| FR-02 | パスワード再設定（管理者リセット） | 3, 4A | [x] (token + mail Mailpit + set-password; nút reset trên UI ở 5B) |
 | FR-03 | 同級管理者アカウント管理 | 4, 5B | [ ] |
 | FR-04 | 法人アカウント発行 | 4, 5B | [ ] |
 | FR-05 | 学生アカウント発行 | 4, 5B | [ ] |
@@ -121,13 +121,15 @@ Kế hoạch chi tiết từng phase + truy vết requirement để kiểm tra c
 **Liên quan:** FR-02..FR-08, FR-10, FR-11, FR-13.
 Tách 4 sub-phase, **dừng review sau mỗi sub-phase**.
 
-### 4A — Hạ tầng backend
-- [ ] `zod` (đã cài) + `src/lib/result.ts` — kiểu `ActionResult<T> = { ok:true; data } | { ok:false; error }`
-- [ ] `src/lib/audit.ts` — helper ghi `AuditLog`
-- [ ] `src/lib/mail.ts` — mail stub (dev: log link ra console)
-- [ ] `src/server/services/token.ts` — tạo/verify `VerificationToken` (PASSWORD_SETUP / PASSWORD_RESET) + đặt mật khẩu qua token
-- [ ] Action: admin reset mật khẩu (FR-02); user đặt mật khẩu lần đầu qua link mail
-- **Test (route tạm):** tạo token → verify → đặt PW → login được; token hết hạn/đã dùng → từ chối
+### 4A — Hạ tầng backend ✅
+- [x] `src/lib/result.ts` — `ActionResult<T> = { ok:true; data } | { ok:false; error }` + `ok()/fail()`
+- [x] `src/lib/audit.ts` — helper ghi `AuditLog`
+- [x] `src/lib/mail.ts` — Nodemailer + **Mailpit** (SMTP :1025, UI :8025); fallback console khi không có SMTP_HOST
+- [x] `src/server/services/token.ts` — create/verify/consume `VerificationToken` (SETUP 3d / RESET 1h) + `issuePasswordSetup`/`issuePasswordReset`
+- [x] `src/server/actions/password.ts` — `adminResetPasswordAction` (FR-02) + `setPasswordAction`
+- [x] Trang `/set-password?token=...` (đặt mật khẩu qua link mail)
+- [x] docker-compose: thêm Mailpit; env `APP_URL`, `SMTP_*`, `MAIL_FROM`
+- **Test (đã verify route tạm + Mailpit):** create→verify→consume→login PW mới OK; reuse/expired bị từ chối; mail vào Mailpit; khôi phục seed
 
 ### 4B — Logic 視聴率/進捗 (lõi) + Vitest
 - [ ] `src/server/services/progress.ts`: `videoWatchedPct`, `courseProgress`, `overallProgress`, phân loại 修了/受講中/未学習

@@ -18,5 +18,14 @@ services:
       timeout: 5s
       retries: 10
 
+  # SMTP catcher cho dev — xem mail tại http://localhost:8025
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: ascare_lms_mail
+    restart: unless-stopped
+    ports:
+      - "1025:1025" # SMTP
+      - "8025:8025" # Web UI
+
 volumes:
   ascare_pgdata:

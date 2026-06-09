@@ -1,0 +1,65 @@
+"use server";
+
+import { z } from "zod";
+import { prisma } from "@/lib/prisma";
+import { requireRole } from "@/lib/auth/rbac";
+import { logAudit } from "@/lib/audit";
+import { ok, fail, type ActionResult } from "@/lib/result";
+import {
+  consumePasswordToken,
+  issuePasswordReset,
+  type TokenUserType,
+} from "@/server/services/token";
+
+async function emailOf(userType: TokenUserType, userId: string): Promise<string | null> {
+  if (userType === "ADMIN")
+    return (await prisma.admin.findUnique({ where: { id: userId } }))?.email ?? null;
+  if (userType === "CORP")
+    return (await prisma.corporation.findUnique({ where: { id: userId } }))?.email ?? null;
+  return (await prisma.student.findUnique({ where: { id: userId } }))?.email ?? null;
+}
+
+/** Admin reset mật khẩu cho 1 tài khoản → gửi mail link đặt lại (FR-02). */
+export async function adminResetPasswordAction(
+  userType: TokenUserType,
+  userId: string,
+): Promise<ActionResult> {
+  const admin = await requireRole("ADMIN");
+  const email = await emailOf(userType, userId);
+  if (!email) return fail("対象アカウントが見つかりません。");
+
+  await issuePasswordReset(userType, userId, email);
+  await logAudit({
+    actorType: "ADMIN",
+    actorId: admin.id,
+    action: "RESET_PASSWORD",
+    target: `${userType}:${userId}`,
+  });
+  return ok();
+}
+
+/** Đặt mật khẩu qua link mail (public — không cần đăng nhập). */
+const setSchema = z.object({
+  token: z.string().min(1, "リンクが無効です。"),
+  password: z.string().min(8, "パスワードは8文字以上で入力してください。"),
+});
+
+export type SetPasswordState = { error?: string; success?: boolean };
+
+export async function setPasswordAction(
+  _prev: SetPasswordState,
+  formData: FormData,
+): Promise<SetPasswordState> {
+  const parsed = setSchema.safeParse({
+    token: formData.get("token"),
+    password: formData.get("password"),
+  });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "入力内容を確認してください。" };
+  }
+
+  const result = await consumePasswordToken(parsed.data.token, parsed.data.password);
+  if (!result.ok) return { error: result.error };
+
+  return { success: true };
+}
