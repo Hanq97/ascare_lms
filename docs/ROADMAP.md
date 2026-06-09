@@ -17,7 +17,10 @@ Kế hoạch chi tiết từng phase + truy vết requirement để kiểm tra c
 | 4B | Backend — Logic 視聴率/進捗 + ViewLog (+ Vitest) | ⏳ |
 | 4C | Backend — CRUD tài khoản (admin/法人/学生 + cascade) | ⏳ |
 | 4D | Backend — CRUD nội dung + profile + read queries | ⏳ |
-| 5 | Frontend (port UI 2 site) | ⏳ |
+| 5A | Frontend — Nền UI + Portal + Login đẹp | ⏳ |
+| 5B | Frontend — 管理サイト (7 đơn vị/màn) | ⏳ |
+| 5C | Frontend — 利用者サイト 法人 (6 đơn vị/màn) | ⏳ |
+| 5D | Frontend — 利用者サイト 学生 (4 đơn vị/màn) | ⏳ |
 | 6A | Video — Storage local (dev) + player + ghi 視聴ログ | ⏳ |
 | 6B | Video — S3 + CloudFront (chỉ swap driver) | ⏳ (chờ tài khoản AWS) |
 | 7 | Hoàn thiện phi chức năng + deploy | ⏳ |
@@ -162,43 +165,45 @@ Tách 4 sub-phase, **dừng review sau mỗi sub-phase**.
 **Mục tiêu:** Dựng lại pixel-perfect UI từ design, nối vào backend. Inline styles + tokens `T`. Responsive cho 利用者サイト.
 **Liên quan:** FR-03..FR-09, FR-12 · SC-*.
 
-### 5A — Nền UI + Portal + Auth UI
-- [ ] Port `ui.tsx` (tokens `T`, icons `I`, `Btn/Badge/Bar/Ring/Card/Field/Input/Modal/useToast`, `Logo`)
-- [ ] Port web component / thay `image-slot` bằng upload thật (sau)
-- [ ] Homepage portal (header logo + 法人ログイン/ユーザーログイン, hero, features; bỏ admin login & course stats)
-- [ ] Trang login (法人 / 学生 / admin) nối Phase 3
-- [ ] Layout responsive (PC/mobile) cho 利用者サイト; 管理サイト chỉ PC
+**Cách làm:** mỗi đơn vị (5x.n) = build → test browser → review → commit. Dừng review sau từng đơn vị.
 
-### 5B — 管理サイト
-- [ ] AdminShell (sidebar: 管理者管理/法人管理/学生管理/コース管理/学生進捗)
-- [ ] SC-A02 Dashboard (KPI gọn)
-- [ ] SC-A03 管理者管理 (list + form full-screen set PW + delete)
-- [ ] SC-A04 法人管理 (list + form 住所検索 + delete chặn + 有効/停止)
-- [ ] SC-A05 学生管理 (list status pulldown + bulk + form)
-- [ ] SC-A06 コース管理 + コース詳細 (drag video, publish toggle, upload form)
-- [ ] SC-A08 学生進捗一覧 + 詳細
+### 5A — Nền UI + Portal + Login đẹp
+- [ ] 5A.1 Port `ui.tsx`: tokens `T`, icons `I`, `Btn/Badge/Bar/Ring/Card/Field/Input/Modal/useToast`, `Logo`
+- [ ] 5A.2 Layout responsive (hook width) + khung 2 site; 管理サイト cảnh báo PC-only màn nhỏ
+- [ ] 5A.3 Homepage portal (header logo + 法人ログイン/ユーザーログイン, hero, features; bỏ admin login & course stats)
+- [ ] 5A.4 Login UI đẹp (thay form tạm Phase 3) — 3 ngữ cảnh role
 
-### 5C — 利用者サイト (法人)
-- [ ] CorpShell (nav: ダッシュボード / 学生管理 / コース一覧 / avatar menu: プロフィール・パスワード変更・ログアウト)
-- [ ] SC-U03 法人ダッシュボード (KPI + コース別)
-- [ ] 学生管理 (法人): list + issue/edit màn riêng + CSV import + bulk
-- [ ] SC-U04 学生進捗詳細 (bỏ 所属)
-- [ ] コース一覧 tab + course detail (player + playlist, không 続きから)
-- [ ] SC-U02 法人プロフィール (login khoá, 住所検索, đổi MK)
+### 5B — 管理サイト (mỗi màn 1 đơn vị)
+- [ ] 5B.1 AdminShell (sidebar) + SC-A02 Dashboard (KPI gọn)
+- [ ] 5B.2 SC-A03 管理者管理 (list + form set PW + delete)
+- [ ] 5B.3 SC-A04 法人管理 (list + form 住所検索 + delete chặn + 有効/停止)
+- [ ] 5B.4 SC-A05 学生管理 (status pulldown + bulk + form)
+- [ ] 5B.5 SC-A06 コース管理 + コース詳細 (drag video, publish toggle)
+- [ ] 5B.6 SC-A07 動画アップロード UI (nối 6A)
+- [ ] 5B.7 SC-A08 学生進捗一覧 + 詳細
 
-### 5D — 利用者サイト (学生)
-- [ ] StudentShell (nav: ホーム / マイ進捗 + avatar: プロフィール・パスワード変更・ログアウト)
-- [ ] SC-U05 学生ホーム (全コース, 続きから, 未学習)
-- [ ] SC-U06 動画視聴 (player, block info, 100%完了 badge; ghi 視聴ログ qua Phase 4)
-- [ ] SC-U07 マイ進捗 (3 nhóm + thanh phân bố)
-- [ ] プロフィール (sửa + đồng bộ, 所属法人 khoá, đổi MK)
+### 5C — 利用者サイト 法人 (mỗi màn 1 đơn vị)
+- [ ] 5C.1 CorpShell (nav + avatar menu) + SC-U03 Dashboard (KPI + コース別)
+- [ ] 5C.2 学生管理 (法人): list + issue/edit màn riêng + bulk
+- [ ] 5C.3 CSV一括登録 (template + preview)
+- [ ] 5C.4 SC-U04 学生進捗詳細 (bỏ 所属)
+- [ ] 5C.5 コース一覧 + course detail (player, không 続きから)
+- [ ] 5C.6 SC-U02 法人プロフィール (login khoá, 住所検索, đổi MK)
 
-### Acceptance
-- [ ] So khớp pixel với design (bố cục, màu, font Noto Sans JP)
-- [ ] 利用者サイト dùng tốt trên mobile; 管理サイト hiện cảnh báo Pit-only trên màn nhỏ
-- [ ] Mọi dữ liệu lấy thật từ DB, thao tác CRUD chạy
+### 5D — 利用者サイト 学生 (mỗi màn 1 đơn vị)
+- [ ] 5D.1 StudentShell (nav + avatar) + SC-U05 ホーム (全コース, 続きから, 未学習)
+- [ ] 5D.2 SC-U06 動画視聴 (player + block info + 100%完了) — **phụ thuộc 6A** (nên làm 6A trước)
+- [ ] 5D.3 SC-U07 マイ進捗 (3 nhóm + thanh phân bố)
+- [ ] 5D.4 プロフィール (sửa + đồng bộ, 所属法人 khoá, đổi MK)
 
-**⏸️ Review checkpoint sau mỗi sub-phase (5A→5B→5C→5D).**
+> **Thứ tự gợi ý:** 5A → 5B → 5C → (6A) → 5D, vì 5D.2 動画視聴 cần video (6A) chạy trước.
+
+### Acceptance (toàn Phase 5)
+- [ ] Pixel khớp design (bố cục, màu, font Noto Sans JP)
+- [ ] 利用者サイト tốt trên mobile; 管理サイト cảnh báo PC-only màn nhỏ
+- [ ] Dữ liệu thật từ DB, CRUD chạy
+
+**⏸️ Review sau mỗi đơn vị (5A.x / 5B.x / 5C.x / 5D.x).**
 
 ---
 
@@ -239,14 +244,15 @@ Tách 4 sub-phase, **dừng review sau mỗi sub-phase**.
 
 ## 7. PHASE 7 — Phi chức năng & Deploy
 
-**Liên quan:** mục 10 非機能要件.
-- [ ] HTTPS (môi trường deploy)
-- [ ] Rà soát responsive toàn 利用者サイト
-- [ ] Bảo vệ PII; 法人 chỉ xem 学生 của mình (kiểm thử phân quyền)
-- [ ] Backup DB + quy trình phục hồi
-- [ ] Log/giám sát lỗi
-- [ ] (Tùy) chuyển `package.json#prisma` → `prisma.config.ts` (hết deprecation Prisma 7)
-- [ ] Deploy (Vercel/AWS) + biến môi trường production
+**Liên quan:** mục 10 非機能要件. Mỗi mục = 1 đơn vị review/test.
+- [ ] 7.1 Rà soát phân quyền end-to-end + bảo vệ PII (法人 chỉ xem 学生 mình) — viết case kiểm thử
+- [ ] 7.2 QA responsive toàn 利用者サイト (PC/スマホ)
+- [ ] 7.3 Log/giám sát lỗi
+- [ ] 7.4 Backup DB + quy trình phục hồi
+- [ ] 7.5 Dọn kỹ thuật: `package.json#prisma` → `prisma.config.ts`; rà các warning build (jose/Edge, font)
+- [ ] 7.6 Deploy (Vercel/AWS) + env production + HTTPS
+
+**⏸️ Review từng mục.**
 
 ---
 
