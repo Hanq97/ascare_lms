@@ -13,7 +13,10 @@ Kế hoạch chi tiết từng phase + truy vết requirement để kiểm tra c
 |---|---|---|
 | 0 | Nền tảng (DB, seed, scaffold, convention, Git/CI, README) | ✅ Xong |
 | 3 | Auth + RBAC | ✅ Xong (chờ review) |
-| 4 | Backend (API/Server Actions + logic 視聴率/進捗) | ⏳ |
+| 4A | Backend — Hạ tầng (zod, ActionResult, mail stub, token PW) | ⏳ |
+| 4B | Backend — Logic 視聴率/進捗 + ViewLog (+ Vitest) | ⏳ |
+| 4C | Backend — CRUD tài khoản (admin/法人/学生 + cascade) | ⏳ |
+| 4D | Backend — CRUD nội dung + profile + read queries | ⏳ |
 | 5 | Frontend (port UI 2 site) | ⏳ |
 | 6A | Video — Storage local (dev) + player + ghi 視聴ログ | ⏳ |
 | 6B | Video — S3 + CloudFront (chỉ swap driver) | ⏳ (chờ tài khoản AWS) |
@@ -113,39 +116,44 @@ Kế hoạch chi tiết từng phase + truy vết requirement để kiểm tra c
 
 **Mục tiêu:** Toàn bộ CRUD + logic 視聴率/進捗, validate, RBAC ở server. Chưa cần UI đẹp.
 **Liên quan:** FR-02..FR-08, FR-10, FR-11, FR-13.
+Tách 4 sub-phase, **dừng review sau mỗi sub-phase**.
 
-### 4.1 Hạ tầng
-- [ ] Cài `zod` (validate input)
-- [ ] Kiểu trả về chuẩn cho action: `{ ok: true, data } | { ok: false, error }`
-- [ ] `src/lib/mail.ts` — gửi mail đặt mật khẩu (giai đoạn dev: log/console hoặc Mailtrap)
-- [ ] `VerificationToken`: tạo/verify token đặt & reset mật khẩu
+### 4A — Hạ tầng backend
+- [ ] `zod` (đã cài) + `src/lib/result.ts` — kiểu `ActionResult<T> = { ok:true; data } | { ok:false; error }`
+- [ ] `src/lib/audit.ts` — helper ghi `AuditLog`
+- [ ] `src/lib/mail.ts` — mail stub (dev: log link ra console)
+- [ ] `src/server/services/token.ts` — tạo/verify `VerificationToken` (PASSWORD_SETUP / PASSWORD_RESET) + đặt mật khẩu qua token
+- [ ] Action: admin reset mật khẩu (FR-02); user đặt mật khẩu lần đầu qua link mail
+- **Test (route tạm):** tạo token → verify → đặt PW → login được; token hết hạn/đã dùng → từ chối
 
-### 4.2 Logic tiến độ (lõi)
-- [ ] `src/server/services/progress.ts`:
-  - [ ] `videoWatchedPct(maxPosition, durationSec)` → 0-100
-  - [ ] `courseProgress(studentId, courseId)` = completed / total
-  - [ ] `overallProgress(studentId)` = trung bình các コース 公開
-  - [ ] phân loại 修了/受講中/未学習
-- [ ] `upsertViewLog(studentId, videoId, position)` — cập nhật `max_position`, `watched_pct`, `completed` (Phương án A)
-- [ ] Đối chiếu kết quả với seed (240 view logs) để chắc logic khớp design
+### 4B — Logic 視聴率/進捗 (lõi) + Vitest
+- [ ] `src/server/services/progress.ts`: `videoWatchedPct`, `courseProgress`, `overallProgress`, phân loại 修了/受講中/未学習
+- [ ] `upsertViewLog(studentId, videoId, position)` — cập nhật `max_position`/`watched_pct`/`completed` (Phương án A)
+- [ ] **Vitest**: cài + cấu hình; unit test cho hàm thuần (pct, phân loại, ranh giới 99%/100%)
+- [ ] CI: thêm bước `npm run test`
+- **Test:** unit (Vitest) + đối chiếu seed (240 log, % từng 学生 khớp design)
 
-### 4.3 CRUD theo domain (kèm RBAC + validate)
-- [ ] 管理者 (admin): create (set PW trực tiếp), update, delete, toggle status — chỉ ADMIN
-- [ ] 法人: create (gửi mail set PW), update (email khoá), delete (chặn nếu có 学生), toggle 有効/停止 (cascade khoá 学生) — ADMIN
-- [ ] 学生: create (gửi mail), update, delete, toggle status, **bulk status/delete** — ADMIN; (法人 chỉ thao tác 学生 của mình)
+### 4C — CRUD tài khoản (RBAC + validate)
+- [ ] 管理者: create (set PW trực tiếp), update, delete, toggle status — ADMIN
+- [ ] 法人: create (gửi mail set PW), update (email khoá), delete (**chặn nếu còn 学生**), toggle 有効/停止 (**cascade khoá 学生**) — ADMIN
+- [ ] 学生: create (gửi mail), update, delete, toggle status, **bulk status/delete** — ADMIN; 法人 chỉ thao tác 学生 của mình
+- **Test:** từng thao tác + ràng buộc cascade/chặn-xoá + scope phân quyền
+
+### 4D — CRUD nội dung + profile + read queries
+- [ ] コース: create/update (thumbnail bắt buộc, default 非公開), publish toggle, sắp xếp video — ADMIN
+- [ ] 動画: thêm/sửa/xoá + đổi thứ tự (metadata; file ở Phase 6A) — ADMIN
 - [ ] 法人 tự sửa profile (login khoá, đồng bộ tức thời) — CORP
 - [ ] 学生 tự sửa profile + đổi mật khẩu — STUDENT
-- [ ] コース: create/update (thumbnail bắt buộc, default 非公開), publish toggle, sắp xếp video — ADMIN
-- [ ] 動画: thêm/sửa/xoá, đổi thứ tự (metadata; file lên S3 ở Phase 6) — ADMIN
-- [ ] Query đọc: danh sách + tiến độ cho dashboard từng role (scope đúng quyền)
+- [ ] Query đọc cho dashboard từng role (scope đúng quyền)
+- **Test:** CRUD + scope đọc đúng quyền
 
-### Acceptance
+### Acceptance (toàn Phase 4)
 - [ ] Mọi action kiểm tra quyền ở server (không tin client)
 - [ ] 法人 không truy được 学生 của 法人 khác
-- [ ] Tính tiến độ khớp số liệu seed
+- [ ] Tính tiến độ khớp số liệu seed (+ Vitest xanh)
 - [ ] Xoá 法人 còn 学生 → bị chặn; 停止 法人 → 学生 bị khoá login
 
-**⏸️ Review checkpoint sau Phase 4.**
+**⏸️ Review checkpoint sau mỗi sub-phase (4A→4B→4C→4D).**
 
 ---
 
