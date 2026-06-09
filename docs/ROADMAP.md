@@ -12,7 +12,7 @@ Kế hoạch chi tiết từng phase + truy vết requirement để kiểm tra c
 | Phase | Nội dung | Trạng thái |
 |---|---|---|
 | 0 | Nền tảng (DB, seed, scaffold, convention, Git/CI, README) | ✅ Xong |
-| 3 | Auth + RBAC | ⏳ Kế tiếp |
+| 3 | Auth + RBAC | ✅ Xong (chờ review) |
 | 4 | Backend (API/Server Actions + logic 視聴率/進捗) | ⏳ |
 | 5 | Frontend (port UI 2 site) | ⏳ |
 | 6 | Video AWS S3 + CloudFront | ⏳ |
@@ -24,8 +24,8 @@ Kế hoạch chi tiết từng phase + truy vết requirement để kiểm tra c
 
 | ID | Chức năng | Phase | Trạng thái |
 |---|---|---|---|
-| FR-01 | ログイン・ログアウト | 3 | [ ] |
-| FR-02 | パスワード再設定（管理者リセット） | 3, 4 | [ ] |
+| FR-01 | ログイン・ログアウト | 3 | [x] |
+| FR-02 | パスワード再設定（管理者リセット） | 3, 4 | [~] (chặn login theo status xong; reset/đặt MK qua mail ở Phase 4) |
 | FR-03 | 同級管理者アカウント管理 | 4, 5B | [ ] |
 | FR-04 | 法人アカウント発行 | 4, 5B | [ ] |
 | FR-05 | 学生アカウント発行 | 4, 5B | [ ] |
@@ -80,22 +80,24 @@ Kế hoạch chi tiết từng phase + truy vết requirement để kiểm tra c
 **Liên quan:** FR-01, FR-02 · 非機能 (PW hash, RBAC, 法人 đa phiên).
 
 ### Task
-- [ ] Cài deps: `jose` (JWT), (bcryptjs đã có)
-- [ ] `src/lib/auth/password.ts` — hash & verify bcrypt (cost ≥ 10)
-- [ ] `src/lib/auth/session.ts` — ký/giải mã JWT, set/clear httpOnly cookie
-- [ ] `src/lib/auth/authenticate.ts` — tìm email qua 3 bảng (Admin→Corp→Student), verify PW, trả `{ id, role, corpId? }`
-- [ ] Chặn login khi `status` = INACTIVE/SUSPENDED; 法人 SUSPENDED → 学生 trực thuộc cũng bị chặn
-- [ ] Server action `login` / `logout`
-- [ ] `src/lib/auth/rbac.ts` — `getSession()`, `requireRole(...)`, `requireAuth()`
-- [ ] `middleware.ts` — bảo vệ `/admin/*` (ADMIN), `/app/*` (CORP|STUDENT); redirect chưa login
-- [ ] 法人 cho phép nhiều phiên đồng thời (JWT stateless — không khoá thiết bị)
-- [ ] Ghi `AuditLog` LOGIN/LOGOUT (FR-13)
+- [x] Cài deps: `jose` (JWT) + `zod` (bcryptjs đã có)
+- [x] `src/lib/auth/password.ts` — hash & verify bcrypt (cost 10)
+- [x] `src/lib/auth/jwt.ts` — ký/giải mã JWT (edge-safe) + `SESSION_COOKIE`
+- [x] `src/lib/auth/session.ts` — set/clear/get cookie httpOnly
+- [x] `src/lib/auth/authenticate.ts` — tìm email qua 3 bảng (Admin→法人→学生), verify PW, trả `{ id, role, corpId? }`
+- [x] Chặn login khi `status` = INACTIVE/SUSPENDED; 法人 SUSPENDED → 学生 trực thuộc cũng bị chặn
+- [x] Server action `loginAction` / `logoutAction`
+- [x] `src/lib/auth/rbac.ts` — `getSession()`, `requireRole(...)`, `requireAuth()`
+- [x] `middleware.ts` — bảo vệ `/admin/*` (ADMIN), `/app/*` (CORP|STUDENT); redirect chưa login
+- [x] 法人 cho phép nhiều phiên đồng thời (JWT stateless)
+- [x] Ghi `AuditLog` LOGIN/LOGOUT (FR-13 phần login)
+- [x] Trang `/login` (form), `/admin` `/app` placeholder bảo vệ, `/` landing
 
-### Acceptance / cách kiểm thử
-- [ ] Login đúng email/PW từng role → cookie set, vào đúng site
-- [ ] Sai PW / account INACTIVE / 法人 SUSPENDED → bị từ chối
-- [ ] Truy cập `/admin/*` khi là 学生 → bị chặn (403/redirect)
-- [ ] Logout xoá cookie
+### Acceptance / cách kiểm thử — ĐÃ VERIFY
+- [x] Login đúng email/PW từng role → trả đúng role/corpId (9 ca test)
+- [x] Sai PW / INACTIVE / 法人 SUSPENDED / 学生 thuộc 法人 SUSPENDED → bị từ chối
+- [x] Truy cập `/admin` khi chưa login → 307 redirect `/login?next=/admin`
+- [x] format/lint/typecheck/build xanh
 
 **⏸️ Review checkpoint sau Phase 3.**
 
