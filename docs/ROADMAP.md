@@ -14,7 +14,7 @@ Kế hoạch chi tiết từng phase + truy vết requirement để kiểm tra c
 | 0 | Nền tảng (DB, seed, scaffold, convention, Git/CI, README) | ✅ Xong |
 | 3 | Auth + RBAC | ✅ Xong (chờ review) |
 | 4A | Backend — Hạ tầng (ActionResult, audit, mail Mailpit, token PW) | ✅ Xong (chờ review) |
-| 4B | Backend — Logic 視聴率/進捗 + ViewLog (+ Vitest) | ⏳ |
+| 4B | Backend — Logic 視聴率/進捗 + ViewLog (+ Vitest) | ✅ Xong (chờ review) |
 | 4C | Backend — CRUD tài khoản (admin/法人/学生 + cascade) | ⏳ |
 | 4D | Backend — CRUD nội dung + profile + read queries | ⏳ |
 | 5A | Frontend — Nền UI + Portal + Login đẹp | ⏳ |
@@ -45,8 +45,8 @@ Kế hoạch chi tiết từng phase + truy vết requirement để kiểm tra c
 | FR-07 | コース管理 | 4, 5B | [ ] |
 | FR-08 | 動画アップロード・管理 | 4, 5B, 6A | [ ] |
 | FR-09 | 動画視聴（全コース） | 5D, 6A | [ ] |
-| FR-10 | 視聴完了判定（視聴率100%） | 4 | [ ] |
-| FR-11 | 進捗自動計算 | 4 | [ ] |
+| FR-10 | 視聴完了判定（視聴率100%） | 4B | [x] |
+| FR-11 | 進捗自動計算 | 4B | [x] |
 | FR-12 | 進捗ダッシュボード | 5B, 5C, 5D | [ ] |
 | FR-13 | 操作ログ・監査 (Should) | 4 | [ ] |
 
@@ -131,12 +131,14 @@ Tách 4 sub-phase, **dừng review sau mỗi sub-phase**.
 - [x] docker-compose: thêm Mailpit; env `APP_URL`, `SMTP_*`, `MAIL_FROM`
 - **Test (đã verify route tạm + Mailpit):** create→verify→consume→login PW mới OK; reuse/expired bị từ chối; mail vào Mailpit; khôi phục seed
 
-### 4B — Logic 視聴率/進捗 (lõi) + Vitest
-- [ ] `src/server/services/progress.ts`: `videoWatchedPct`, `courseProgress`, `overallProgress`, phân loại 修了/受講中/未学習
-- [ ] `upsertViewLog(studentId, videoId, position)` — cập nhật `max_position`/`watched_pct`/`completed` (Phương án A)
-- [ ] **Vitest**: cài + cấu hình; unit test cho hàm thuần (pct, phân loại, ranh giới 99%/100%)
-- [ ] CI: thêm bước `npm run test`
-- **Test:** unit (Vitest) + đối chiếu seed (240 log, % từng 学生 khớp design)
+### 4B — Logic 視聴率/進捗 (lõi) + Vitest ✅
+- [x] `progress-calc.ts` (hàm thuần): `videoWatchedPercent`, `courseProgressPercent`, `classifyCourse`, `overallProgressPercent`
+- [x] `progress.ts` (DB): `upsertViewLog` (Phương án A), `getCourseProgress`, `getOverallProgress`, `getStudentProgressSummary`
+- [x] **Vitest**: cài + config; 15 unit test (biên 99%/100%, 5/7, rỗng…)
+- [x] CI: thêm bước `npm run test`
+- [x] Đổi tên `pct→percent`, `klass→category` (cột DB `watched_pct→watched_percent`, migration RENAME giữ data)
+- [x] `docs/GLOSSARY.md` (mapping thuật ngữ↔code↔DB)
+- **Test (đã verify):** Vitest 15/15 + đối chiếu seed (overall s1=76, s5=88, summary 修了5/受講中2/未学習1, upsert completed)
 
 ### 4C — CRUD tài khoản (RBAC + validate)
 - [ ] 管理者: create (set PW trực tiếp), update, delete, toggle status — ADMIN

@@ -11,7 +11,7 @@
 //
 //  Quyết định chính:
 //   - Login bằng EMAIL (chat: "ログインID → email"). Admin set/reset login.
-//   - 視聴完了 = Phương án A: watchedPct = maxPosition / durationSec.
+//   - 視聴完了 = Phương án A: watchedPercent = maxPosition / durationSec.
 //   - 法人 = 1 account, nhiều người đăng nhập đồng thời (KHÔNG có bảng Staff).
 //   - 法人 停止 (SUSPENDED) → khoá luôn 学生 trực thuộc (xử lý ở tầng app/logic).
 //   - 進捗 (tiến độ) KHÔNG lưu — tính động từ ViewLog.
@@ -156,14 +156,14 @@ model Video {
 
 // ---------- 視聴ログ / ViewLog (Phương án A) ----------
 // 1 bản ghi / (学生 × 動画). Lưu vị trí xa nhất; hỗ trợ "xem tiếp từ chỗ cũ".
-//   watchedPct = round(maxPosition / video.durationSec * 100)
-//   completed  = watchedPct >= 100
+//   watchedPercent = round(maxPosition / video.durationSec * 100)
+//   completed      = watchedPercent >= 100
 model ViewLog {
   id          String   @id @default(cuid())
   studentId   String   @map("student_id")
   videoId     String   @map("video_id")
-  maxPosition Int      @default(0) @map("max_position") // 最大到達位置 (giây)
-  watchedPct  Int      @default(0) @map("watched_pct") // 視聴率 0-100
+  maxPosition    Int      @default(0) @map("max_position") // 最大到達位置 (giây)
+  watchedPercent Int      @default(0) @map("watched_percent") // 視聴率 0-100
   completed   Boolean  @default(false) // 完了フラグ (視聴率100%)
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")

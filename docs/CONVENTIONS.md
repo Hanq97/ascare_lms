@@ -12,6 +12,7 @@ UI hiển thị **tiếng Nhật**; **định danh trong code dùng tiếng Anh*
 - **Format**: 2 spaces, dấu `;`, nháy kép cho JSX attr, nháy đơn/kép nhất quán theo file. (Khuyến nghị Prettier mặc định.)
 - Mỗi file một mục đích rõ ràng; file > ~300 dòng nên tách.
 - Import nội bộ dùng alias `@/` (vd `@/lib/prisma`), không dùng `../../..`.
+- **Viết tắt**: tránh viết tắt khó hiểu. Dùng `percent` (không `pct`), `category` (không `klass`). Bảng đối chiếu thuật ngữ↔code↔DB + quy ước viết tắt: [GLOSSARY.md](GLOSSARY.md).
 
 ---
 

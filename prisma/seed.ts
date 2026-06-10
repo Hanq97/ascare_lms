@@ -513,7 +513,13 @@ async function main() {
         const videoId = ids[i];
         const dur = durByVideo[videoId];
         await prisma.viewLog.create({
-          data: { studentId: s.id, videoId, maxPosition: dur, watchedPct: 100, completed: true },
+          data: {
+            studentId: s.id,
+            videoId,
+            maxPosition: dur,
+            watchedPercent: 100,
+            completed: true,
+          },
         });
       }
     }
