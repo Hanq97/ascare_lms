@@ -49,15 +49,19 @@ Quy ước: `[ ]` chưa · `[x]` xong · `[~]` đang làm. Mỗi phase xong → 
 - [x] Cập nhật `DATA_MODEL.md` + `GLOSSARY.md` (4 role, creator, status)
 - **Test (đã verify):** login 4 role OK; s11 (corp4無効)→chặn; admin無効→chặn; course owner đúng; Vitest 15/15; build xanh
 
-### ⬛ Phase BE — Backend CRUD đầy đủ · **15–22/6**
-- [ ] **4C rework**: admin/教師/法人/学生 CRUD (invite-email, email khoá, status 有効/無効, bulk, chặn-xoá)
-  - 教師: create→invite, delete chặn nếu còn khóa
-  - 法人: 無効 → cascade 学生無効
-  - 学生: +bulk status/delete; 法人 chỉ 学生 của mình
-- [ ] **CSV import 学生 (法人)**: parse .csv UTF-8 (氏名/カナ/Email/国籍) → validate → tạo + invite hàng loạt
+### ⬛ Phase BE1 — Account CRUD (4 role) + CSV · **15–19/6** ✅
+- [x] Services (nhận `actor`, ActionResult): admin / 教師 / 法人 / 学生 — create→invite-email, email khoá, status 有効/無効
+- [x] 教師 delete chặn nếu còn コース (ERR-104); 法人 delete chặn nếu còn 学生 (ERR-105)
+- [x] 法人 set 無効 → **cascade mutate 学生 無効** (INF-106); 有効 lại không re-cascade
+- [x] 学生 +bulk status/delete; scope 法人 chỉ 学生 của mình
+- [x] **CSV import 学生 (法人)**: parse .csv UTF-8 (header skip, validate, dup/email lỗi) + invite hàng loạt
+- [x] Thin actions + AuditLog
+- **Test (đã verify):** 13 ca route tạm (CRUD/scope/cascade/CSV/bulk) + Vitest 19/19 (csv-parse 4)
+
+### ⬛ Phase BE2 — Course/Video + Progress reads · **19–22/6**
 - [ ] **Course/Video CRUD** (creator scope): teacher chỉ khóa mình; tạo/sửa/公開toggle/reorder/xoá; upload video metadata
-- [ ] **Progress reads** theo role: admin (toàn bộ), teacher (khóa mình + 受講者), 法人 (学生 mình), 学生 (bản thân)
-- **Test:** route tạm + Vitest cho rule scope/cascade
+- [ ] **Progress reads** theo role: admin (toàn bộ), teacher (khóa mình + 受講者), 法人 (学生 mình), 学生 (bản thân) — có search/filter
+- **Test:** route tạm + Vitest cho rule scope
 
 ### ⬛ Phase C — Frontend nền: UI kit + Portal + Login · **23–27/6**
 - [ ] Port `ui.tsx`: tokens `T`, icons, **Btn/Badge/StatusSelect(有効·無効 inline)/Table/SearchBar/Bar/Ring/FormScreen(2-col full-screen)/Modal/Toast/IconBtn(icon-only +tooltip)/ConfirmModal**
