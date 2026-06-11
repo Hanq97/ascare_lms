@@ -74,10 +74,12 @@ Quy ước: `[ ]` chưa · `[x]` xong · `[~]` đang làm. Mỗi phase xong → 
 - [x] Portal navigable (9 màn admin + 5 màn 利用者 = placeholder "準備中", Phase D/E thay)
 - **Test:** routing verify tự động + kịch bản thủ công `docs/TEST_PHASE_C.md` (~40 ca)
 
-### ⬛ Phase F — Video local (6A) + VideoPlayer component · **28/6–1/7**
-- [ ] Storage abstraction (driver `local`) + route phát `/api/videos/[id]/stream` có **auth + HTTP Range 206**
-- [ ] Upload thật (MP4/MOV; ERR-113) + lấy `durationSec` ở client; lưu key vào `videos.url`
-- [ ] `VideoPlayer` component: ghi `max_position` → `upsertViewLog` (4B); 100%→完了; 続きから từ `max_position`
+### ⬛ Phase F — Video local (6A) + VideoPlayer component · **28/6–1/7** ✅
+- [x] Storage abstraction `src/lib/storage.ts` (local) + route `/api/media/[key]` có **auth + HTTP Range 206** + chống path traversal
+- [x] `uploadVideoAction` (MP4/WebM/MOV ≤500MB, admin/教師) → lưu `uploads/videos/`, trả key+url; `next.config` bodySizeLimit 500mb
+- [x] `VideoPlayer`: ghi `max_position` mỗi 5s → `upsertViewLog` (4B); 100%→完了; 続きから từ `max_position`; bar 視聴率 + badge 修了
+- [x] Seed: 1 file mẫu `sample.mp4` (30s) dùng chung, `durationSec=30` để test 完了 thật; `last_login_at` cập nhật khi login
+- **Test:** storage layer + auth gate (401) verify tự động; player verify trực quan (record/resume/seek/完了)
 > Làm trước D/E vì SC-A10 (upload) và SC-U09 (xem) dùng component này.
 
 ### ⬛ Phase D — 管理サイト (13 màn) · **2–11/7**

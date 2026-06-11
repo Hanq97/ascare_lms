@@ -8,11 +8,27 @@
  * ============================================================ */
 import { PrismaClient, AccountStatus, CourseStatus, CreatorType } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { promises as fs } from "fs";
+import path from "path";
 
 const prisma = new PrismaClient();
 
-/** "m:ss" -> giây */
-const sec = (d: string) => d.split(":").reduce((a, b) => a * 60 + Number(b), 0);
+// Demo video: mọi 動画 dùng chung 1 file mẫu (sample.mp4, ~30s) để test player + tiến độ thật.
+// durationSec = đúng độ dài file ⇒ xem hết = 視聴率100% = 完了 (Phương án A). Thay video thật sau.
+const SAMPLE_KEY = "sample.mp4";
+const SAMPLE_SEC = 30;
+
+/** Copy file mẫu (committed) vào uploads/videos/ (runtime, gitignore). */
+async function ensureSampleVideo() {
+  const srcAsset = path.join(process.cwd(), "prisma", "seed-assets", "sample.mp4");
+  const destDir = path.join(process.cwd(), "uploads", "videos");
+  await fs.mkdir(destDir, { recursive: true });
+  try {
+    await fs.copyFile(srcAsset, path.join(destDir, SAMPLE_KEY));
+  } catch {
+    console.warn("⚠️  seed-assets/sample.mp4 không tìm thấy — bỏ qua copy video mẫu.");
+  }
+}
 
 // ---------- COURSES + VIDEOS (9 コース) ----------
 type V = { t: string; d: string; detail?: string };
@@ -445,6 +461,8 @@ async function main() {
   const pw = process.env.SEED_PASSWORD || "Care@2026";
   const passwordHash = await bcrypt.hash(pw, 10);
 
+  await ensureSampleVideo();
+
   // Xoá theo thứ tự phụ thuộc (idempotent)
   await prisma.viewLog.deleteMany();
   await prisma.video.deleteMany();
@@ -529,8 +547,8 @@ async function main() {
               id,
               title: v.t,
               order: i + 1,
-              durationSec: sec(v.d),
-              url: `videos/${id}.mp4`,
+              durationSec: SAMPLE_SEC, // = độ dài file mẫu (demo dùng chung sample.mp4)
+              url: SAMPLE_KEY,
               detail:
                 v.detail ||
                 `このレッスンでは「${v.t}」について、介護の現場で役立つ手順とポイントを動画で解説します。`,
@@ -562,8 +580,8 @@ async function main() {
   // 視聴ログ — tái tạo tiến độ: done video đầu của mỗi khóa = completed 100%
   const durByVideo: Record<string, number> = {};
   for (const c of COURSES) {
-    c.videos.forEach((v, i) => {
-      durByVideo[courseVideoIds[c.id][i]] = sec(v.d);
+    c.videos.forEach((_v, i) => {
+      durByVideo[courseVideoIds[c.id][i]] = SAMPLE_SEC; // khớp durationSec mới
     });
   }
   for (const s of STUDENTS) {
