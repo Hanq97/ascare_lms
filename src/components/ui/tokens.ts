@@ -1,0 +1,22 @@
+// Design tokens — port 1:1 từ design bundle (lms/ui.jsx). Dùng inline styles.
+export const T = {
+  primary: "#2563eb",
+  primaryDark: "#1e51c9",
+  primarySoft: "#eaf2fe",
+  accent: "#d6336c",
+  accentSoft: "#fde7ee",
+  green: "#1f8a4c",
+  greenSoft: "#e9f3ec",
+  amber: "#d3702a",
+  amberSoft: "#fdf0e7",
+  bg: "#f5f7fa",
+  surface: "#fff",
+  line: "#e8ecf2",
+  lineSoft: "#eef1f5",
+  ink: "#1f2733",
+  muted: "#5b6573",
+  muted2: "#7a8494",
+  muted3: "#9aa3af",
+  track: "#e9edf3",
+  font: '"Noto Sans JP",sans-serif',
+} as const;

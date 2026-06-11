@@ -64,3 +64,29 @@ select {
   background-position: right 12px center;
   padding-right: 36px !important;
 }
+
+/* --- login 2 site (brand panel ẩn trên mobile) --- */
+.login-split {
+  display: flex;
+  min-height: 100vh;
+  background: #f5f7fa;
+}
+.login-brand {
+  width: 44%;
+}
+.login-mobile-logo {
+  display: none;
+}
+@media (max-width: 860px) {
+  .login-split {
+    flex-direction: column;
+  }
+  .login-brand {
+    display: none !important; /* đè inline display:flex của brand panel */
+  }
+  .login-mobile-logo {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 26px;
+  }
+}

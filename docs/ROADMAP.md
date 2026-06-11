@@ -65,11 +65,14 @@ Quy ước: `[ ]` chưa · `[x]` xong · `[~]` đang làm. Mỗi phase xong → 
 - [x] Action wrappers `content.ts`
 - **Test (đã verify):** 21 ca route tạm (CRUD/scope/publish/reorder/list/filter/search/progress) + Vitest 19/19
 
-### ⬛ Phase C — Frontend nền: UI kit + Portal + Login · **23–27/6**
-- [ ] Port `ui.tsx`: tokens `T`, icons, **Btn/Badge/StatusSelect(有効·無効 inline)/Table/SearchBar/Bar/Ring/FormScreen(2-col full-screen)/Modal/Toast/IconBtn(icon-only +tooltip)/ConfirmModal**
-- [ ] Portal landing (header logo + 法人ログイン/ユーザーログイン; KHÔNG có admin/teacher login; features; responsive + smartphone preview)
-- [ ] Login port design (4 role routing: admin/teacher→/admin, corp/student→/app) + set-password port design
-- [ ] Shell: 管理サイト (sidebar khác nhau admin↔teacher, header **講師ロール** badge cho teacher, PC-only + cảnh báo màn nhỏ) · 利用者サイト (responsive, <820px hamburger)
+### ⬛ Phase C — Frontend nền: UI kit + Portal + Login · **23–27/6** ✅
+- [x] UI kit `src/components/ui/`: tokens `T`, icons, **Btn/Badge/StatusDot/StatusSelect/Bar/Ring/Card/Field/Input/Modal(Portal+center)/ConfirmDelete/useToast/PageHead/ScreenPlaceholder/Logo**
+- [x] Landing `/` (header logo + 利用者/管理ログイン; hero; features; responsive)
+- [x] **Login 2 site** (chốt lại design): `/login` (法人+学生) · `/admin/login` (admin+教師) — brand panel, show password, chặn sai cổng, cross-link, redirect-nếu-đã-login
+- [x] Shell: 管理サイト (sidebar admin↔teacher khác nhau, badge 講師) · 利用者サイト (top-nav, <820px hamburger drawer)
+- [x] Logout + **modal confirm** (về đúng cổng theo role) · middleware đẩy đúng cổng login
+- [x] Portal navigable (9 màn admin + 5 màn 利用者 = placeholder "準備中", Phase D/E thay)
+- **Test:** routing verify tự động + kịch bản thủ công `docs/TEST_PHASE_C.md` (~40 ca)
 
 ### ⬛ Phase F — Video local (6A) + VideoPlayer component · **28/6–1/7**
 - [ ] Storage abstraction (driver `local`) + route phát `/api/videos/[id]/stream` có **auth + HTTP Range 206**
