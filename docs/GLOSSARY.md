@@ -7,10 +7,11 @@ Liên quan: [DATA_MODEL.md](DATA_MODEL.md) · [CONVENTIONS.md](CONVENTIONS.md).
 
 | 日本語 | Code (Prisma model) | DB table | Mô tả |
 |---|---|---|---|
-| 管理者 | `Admin` | `admins` | Quản trị viên |
+| 管理者 | `Admin` | `admins` | Quản trị viên (管理サイト) |
+| 教師 | `Teacher` | `teachers` | Giáo viên (管理サイト); tạo/quản khóa của mình |
 | 法人 | `Corporation` | `corporations` | Pháp nhân (1 account, nhiều người login) |
 | 学生 | `Student` | `students` | Học viên (外国人材) |
-| コース | `Course` | `courses` | Khóa học |
+| コース | `Course` | `courses` | Khóa học (có 作成者 admin/teacher) |
 | 動画 / レッスン | `Video` | `videos` | Video bài học |
 | 視聴ログ | `ViewLog` | `view_logs` | Log xem (nền tính 進捗) |
 | (token) | `VerificationToken` | `verification_tokens` | Token đặt/đặt-lại mật khẩu |
@@ -25,6 +26,9 @@ Liên quan: [DATA_MODEL.md](DATA_MODEL.md) · [CONVENTIONS.md](CONVENTIONS.md).
 | `passwordHash` | `password_hash` | Mật khẩu đã băm |
 | `corpId` | `corp_id` | 所属法人 (FK) |
 | `courseId` | `course_id` | Khóa chứa video (FK) |
+| `org` | `org` | 所属教育機関 (Teacher, tuỳ chọn) |
+| `creatorType` | `creator_type` | 作成者 loại: ADMIN/TEACHER |
+| `adminId` / `teacherId` | `admin_id` / `teacher_id` | FK người tạo khóa |
 | `thumbnailUrl` | `thumbnail_url` | サムネイル |
 | `durationSec` | `duration_sec` | 再生時間 (giây) |
 | `order` | `order` | 並び順 / 順番 |
@@ -38,11 +42,14 @@ Liên quan: [DATA_MODEL.md](DATA_MODEL.md) · [CONVENTIONS.md](CONVENTIONS.md).
 
 | Enum | Giá trị | 日本語 |
 |---|---|---|
-| `AccountStatus` (Admin/学生) | `ACTIVE` / `INACTIVE` | 有効 / 無効 |
-| `CorpStatus` (法人) | `ACTIVE` / `SUSPENDED` | 有効 / 停止 |
+| `AccountStatus` (**cả 4 role**) | `ACTIVE` / `INACTIVE` | 有効 / 無効 |
+| `CreatorType` (Course 作成者) | `ADMIN` / `TEACHER` | 管理者作成 / 教師作成 |
 | `CourseStatus` | `DRAFT` / `PUBLISHED` | 非公開 / 公開 |
 | `TokenPurpose` | `PASSWORD_SETUP` / `PASSWORD_RESET` | Đặt MK / Đặt lại MK |
 | `CourseProgressCategory` | `DONE` / `IN_PROGRESS` / `NOT_STARTED` | 修了 / 受講中 / 未学習 |
+| `Role` (TS, auth) | `ADMIN` / `TEACHER` / `CORP` / `STUDENT` | 4 vai trò |
+
+> v1.4: `CorpStatus` (有効/停止) **đã bỏ** — 法人 dùng `AccountStatus` (有効/無効) như các role khác.
 
 ## 4. Quy ước viết tắt (Abbreviations)
 

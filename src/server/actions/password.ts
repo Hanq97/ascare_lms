@@ -14,6 +14,8 @@ import {
 async function emailOf(userType: TokenUserType, userId: string): Promise<string | null> {
   if (userType === "ADMIN")
     return (await prisma.admin.findUnique({ where: { id: userId } }))?.email ?? null;
+  if (userType === "TEACHER")
+    return (await prisma.teacher.findUnique({ where: { id: userId } }))?.email ?? null;
   if (userType === "CORP")
     return (await prisma.corporation.findUnique({ where: { id: userId } }))?.email ?? null;
   return (await prisma.student.findUnique({ where: { id: userId } }))?.email ?? null;

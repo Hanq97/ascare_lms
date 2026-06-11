@@ -6,7 +6,7 @@
  *  Mật khẩu demo cho mọi tài khoản: SEED_PASSWORD (mặc định "Care@2026").
  *  Đăng nhập bằng EMAIL. Tiến độ (ViewLog) tái tạo từ `prog` trong design.
  * ============================================================ */
-import { PrismaClient, AccountStatus, CorpStatus, CourseStatus } from "@prisma/client";
+import { PrismaClient, AccountStatus, CourseStatus, CreatorType } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
@@ -189,7 +189,7 @@ type Corp = {
   phone: string;
   postal: string;
   address: string;
-  status: CorpStatus;
+  status: AccountStatus;
 };
 const CORPS: Corp[] = [
   {
@@ -238,7 +238,7 @@ const CORPS: Corp[] = [
     email: "info@himawari-care.jp",
     postal: "812-0011",
     address: "福岡県福岡市博多区博多駅前2-1-1",
-    status: "SUSPENDED",
+    status: "INACTIVE", // 無効 → 学生 trực thuộc (s11) không login được (cascade)
   },
   {
     id: "corp5",
@@ -394,6 +394,47 @@ const ADMINS = [
   },
 ];
 
+// ---------- TEACHERS (3 教師) ----------
+const TEACHERS = [
+  {
+    id: "t1",
+    name: "佐藤 健一",
+    nameKana: "サトウ ケンイチ",
+    email: "k.sato@tokyo-kaigo.ac.jp",
+    org: "東京介護福祉専門学校",
+    status: "ACTIVE" as AccountStatus,
+  },
+  {
+    id: "t2",
+    name: "鈴木 美和",
+    nameKana: "スズキ ミワ",
+    email: "m.suzuki@osaka-care.ac.jp",
+    org: "大阪福祉教育学院",
+    status: "ACTIVE" as AccountStatus,
+  },
+  {
+    id: "t3",
+    name: "高田 隆",
+    nameKana: "タカダ タカシ",
+    email: "t.takada@nagoya-kaigo.ac.jp",
+    org: "名古屋介護専門学校",
+    status: "ACTIVE" as AccountStatus,
+  },
+];
+
+// 作成者 mỗi コース: admin (a1/a2) hoặc teacher (t1/t2/t3). (theo design)
+const COURSE_OWNER: Record<string, { type: CreatorType; id: string }> = {
+  c1: { type: "ADMIN", id: "a1" },
+  c2: { type: "ADMIN", id: "a1" },
+  c3: { type: "ADMIN", id: "a1" },
+  c4: { type: "ADMIN", id: "a2" },
+  c7: { type: "ADMIN", id: "a2" },
+  c5: { type: "TEACHER", id: "t1" },
+  c6: { type: "TEACHER", id: "t2" },
+  c8: { type: "TEACHER", id: "t3" },
+  c9: { type: "TEACHER", id: "t2" },
+};
+
 const kanaToName = (kana: string) => {
   const [last = "太郎", first = ""] = kana.split(/\s+/);
   return { last, first };
@@ -411,6 +452,7 @@ async function main() {
   await prisma.student.deleteMany();
   await prisma.corporation.deleteMany();
   await prisma.admin.deleteMany();
+  await prisma.teacher.deleteMany();
   await prisma.verificationToken.deleteMany();
   await prisma.auditLog.deleteMany();
 
@@ -424,6 +466,21 @@ async function main() {
         email: a.email,
         passwordHash,
         status: a.status,
+      },
+    });
+  }
+
+  // 教師
+  for (const t of TEACHERS) {
+    await prisma.teacher.create({
+      data: {
+        id: t.id,
+        name: t.name,
+        nameKana: t.nameKana,
+        email: t.email,
+        org: t.org,
+        passwordHash,
+        status: t.status,
       },
     });
   }
@@ -452,6 +509,7 @@ async function main() {
   const courseVideoIds: Record<string, string[]> = {};
   for (const c of COURSES) {
     const ids: string[] = [];
+    const owner = COURSE_OWNER[c.id];
     await prisma.course.create({
       data: {
         id: c.id,
@@ -460,6 +518,9 @@ async function main() {
         status: c.status,
         order: c.order,
         thumbnailUrl: `/thumbnails/${c.id}.jpg`,
+        creatorType: owner.type,
+        adminId: owner.type === "ADMIN" ? owner.id : null,
+        teacherId: owner.type === "TEACHER" ? owner.id : null,
         videos: {
           create: c.videos.map((v, i) => {
             const id = `v${++vid}`;
@@ -527,6 +588,7 @@ async function main() {
 
   const counts = {
     admins: await prisma.admin.count(),
+    teachers: await prisma.teacher.count(),
     corps: await prisma.corporation.count(),
     students: await prisma.student.count(),
     courses: await prisma.course.count(),
@@ -535,7 +597,9 @@ async function main() {
   };
   console.log("✅ Seed xong:", counts);
   console.log(`🔑 Mật khẩu demo cho mọi tài khoản: ${pw}`);
-  console.log("   Admin login ví dụ: yamada@ascare.example.jp");
+  console.log(
+    "   Login ví dụ: yamada@ascare.example.jp (admin) · k.sato@tokyo-kaigo.ac.jp (teacher)",
+  );
 }
 
 main()

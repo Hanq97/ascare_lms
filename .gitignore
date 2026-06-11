@@ -33,3 +33,6 @@ yarn-error.log*
 
 # claude local settings
 /.claude/settings.local.json
+
+# design bundle (local reference only)
+/.design2/

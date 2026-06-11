@@ -2,18 +2,18 @@
 //  ASCare LMS — Prisma schema
 //  介護分野 外国人材向け 動画学習・進捗管理プラットフォーム
 //
-//  Nguồn: 要件定義書 v1.2 (mục 8 データモデル) + design ASCare_LMS
-//  + các refinement từ chat transcript (đã chốt 2026-06-09).
+//  Nguồn: 要件定義書 v1.4 (4 role: 管理者/教師/法人/学生) + 2 詳細設計書 + design ASCare.
 //
-//  Naming (xem docs/CONVENTIONS.md):
+//  Naming (xem docs/CONVENTIONS.md, docs/GLOSSARY.md):
 //   - Model PascalCase, field camelCase.
 //   - Bảng = snake_case số nhiều (@@map); cột = snake_case (@map).
 //
-//  Quyết định chính:
-//   - Login bằng EMAIL (chat: "ログインID → email"). Admin set/reset login.
+//  Quyết định chính (v1.4):
+//   - 4 role, mỗi role 1 bảng: Admin / Teacher / Corporation / Student. Login bằng EMAIL.
+//   - Tạo tài khoản → invite-email (set password qua link); admin reset người khác.
 //   - 視聴完了 = Phương án A: watchedPercent = maxPosition / durationSec.
-//   - 法人 = 1 account, nhiều người đăng nhập đồng thời (KHÔNG có bảng Staff).
-//   - 法人 停止 (SUSPENDED) → khoá luôn 学生 trực thuộc (xử lý ở tầng app/logic).
+//   - Status: AccountStatus 有効/無効 cho CẢ 4 role (bỏ 停止). 法人無効 → cascade 学生無効 (tầng app).
+//   - コース có 作成者 (creatorType ADMIN|TEACHER); teacher chỉ quản khóa của mình.
 //   - 進捗 (tiến độ) KHÔNG lưu — tính động từ ViewLog.
 // ============================================================
 
@@ -28,16 +28,16 @@ datasource db {
 
 // ---------- Enums ----------
 
-/// Trạng thái dùng cho 管理者 / 学生
+/// Trạng thái tài khoản — dùng chung cho CẢ 4 role (管理者/教師/法人/学生). v1.4: bỏ 停止.
 enum AccountStatus {
   ACTIVE // 有効
   INACTIVE // 無効
 }
 
-/// Trạng thái 法人 — SUSPENDED (停止) sẽ cascade khoá 学生 trực thuộc
-enum CorpStatus {
-  ACTIVE // 有効
-  SUSPENDED // 停止
+/// Người tạo khóa học (作成者): 管理者 hoặc 教師.
+enum CreatorType {
+  ADMIN // 管理者作成
+  TEACHER // 教師作成
 }
 
 /// Trạng thái công khai của コース — mặc định DRAFT (非公開)
@@ -66,27 +66,49 @@ model Admin {
   createdAt    DateTime      @default(now()) @map("created_at")
   updatedAt    DateTime      @updatedAt @map("updated_at")
 
+  courses Course[] // コース do admin này tạo
+
   @@map("admins")
+}
+
+// ---------- 教師 / Teacher ----------
+// Giáo viên (cơ sở giáo dục ngoài). Đăng nhập 管理サイト. Tạo/quản lý KHÓA CỦA MÌNH.
+// Không thuộc 法人. org = 所属教育機関 (tuỳ chọn). Tạo → invite-email.
+model Teacher {
+  id           String        @id @default(cuid())
+  name         String // 氏名
+  nameKana     String        @map("name_kana") // 氏名（カナ）
+  email        String        @unique // login ID (編集不可)
+  passwordHash String?       @map("password_hash") // null cho tới khi đặt mật khẩu qua mail
+  org          String? // 所属教育機関 (tuỳ chọn, editable)
+  status       AccountStatus @default(ACTIVE)
+  lastLoginAt  DateTime?     @map("last_login_at")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+
+  courses Course[] // コース do teacher này tạo (xoá teacher bị chặn nếu còn khóa)
+
+  @@map("teachers")
 }
 
 // ---------- 法人 / Corporation ----------
 // 1法人 = 1 account (nhiều người đăng nhập đồng thời). Login info do admin set.
-// email khoá khi edit. status SUSPENDED → 学生 trực thuộc bị khoá.
+// email khoá khi edit. status 無効 → cascade 学生 trực thuộc 無効 (v1.4).
 model Corporation {
-  id           String     @id @default(cuid())
+  id           String        @id @default(cuid())
   name         String // 法人名
-  nameKana     String     @map("name_kana") // 法人名（カナ）
-  personName   String     @map("person_name") // 担当者名
-  personKana   String     @map("person_kana") // 担当者名（カナ）
-  email        String     @unique // login ID (編集不可)
-  passwordHash String?    @map("password_hash") // null cho tới khi 法人 đặt mật khẩu
+  nameKana     String        @map("name_kana") // 法人名（カナ）
+  personName   String        @map("person_name") // 担当者名
+  personKana   String        @map("person_kana") // 担当者名（カナ）
+  email        String        @unique // login ID (編集不可)
+  passwordHash String?       @map("password_hash") // null cho tới khi 法人 đặt mật khẩu
   phone        String // 電話番号
   postal       String // 郵便番号
   address      String // 住所
-  status       CorpStatus @default(ACTIVE)
-  lastLoginAt  DateTime?  @map("last_login_at")
-  createdAt    DateTime   @default(now()) @map("created_at")
-  updatedAt    DateTime   @updatedAt @map("updated_at")
+  status       AccountStatus @default(ACTIVE) // 有効/無効 (v1.4: bỏ 停止)
+  lastLoginAt  DateTime?     @map("last_login_at")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
 
   students Student[]
 
@@ -117,19 +139,27 @@ model Student {
 
 // ---------- コース / Course ----------
 // Gom các 動画. Bỏ カテゴリ. Mặc định 非公開. thumbnail bắt buộc.
+// 作成者: ADMIN (adminId) hoặc TEACHER (teacherId). Teacher chỉ quản khóa của mình.
 model Course {
   id           String       @id @default(cuid())
-  title        String // タイトル
-  description  String       @default("") // 説明
+  title        String // コース名
+  description  String       @default("") // コース内容
   status       CourseStatus @default(DRAFT)
   order        Int          @default(0) // 並び順
   thumbnailUrl String       @map("thumbnail_url") // サムネイル (bắt buộc khi tạo)
+  creatorType  CreatorType  @map("creator_type") // ADMIN | TEACHER
+  adminId      String?      @map("admin_id") // set khi creatorType=ADMIN
+  teacherId    String?      @map("teacher_id") // set khi creatorType=TEACHER
   createdAt    DateTime     @default(now()) @map("created_at")
   updatedAt    DateTime     @updatedAt @map("updated_at")
 
-  videos Video[]
+  admin   Admin?   @relation(fields: [adminId], references: [id], onDelete: SetNull)
+  teacher Teacher? @relation(fields: [teacherId], references: [id], onDelete: Restrict)
+  videos  Video[]
 
   @@index([order])
+  @@index([teacherId])
+  @@index([adminId])
   @@map("courses")
 }
 
@@ -159,14 +189,14 @@ model Video {
 //   watchedPercent = round(maxPosition / video.durationSec * 100)
 //   completed      = watchedPercent >= 100
 model ViewLog {
-  id          String   @id @default(cuid())
-  studentId   String   @map("student_id")
-  videoId     String   @map("video_id")
+  id             String   @id @default(cuid())
+  studentId      String   @map("student_id")
+  videoId        String   @map("video_id")
   maxPosition    Int      @default(0) @map("max_position") // 最大到達位置 (giây)
   watchedPercent Int      @default(0) @map("watched_percent") // 視聴率 0-100
-  completed   Boolean  @default(false) // 完了フラグ (視聴率100%)
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  completed      Boolean  @default(false) // 完了フラグ (視聴率100%)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
 
   student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
   video   Video   @relation(fields: [videoId], references: [id], onDelete: Cascade)
