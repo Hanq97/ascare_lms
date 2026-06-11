@@ -58,10 +58,12 @@ Quy ước: `[ ]` chưa · `[x]` xong · `[~]` đang làm. Mỗi phase xong → 
 - [x] Thin actions + AuditLog
 - **Test (đã verify):** 13 ca route tạm (CRUD/scope/cascade/CSV/bulk) + Vitest 19/19 (csv-parse 4)
 
-### ⬛ Phase BE2 — Course/Video + Progress reads · **19–22/6**
-- [ ] **Course/Video CRUD** (creator scope): teacher chỉ khóa mình; tạo/sửa/公開toggle/reorder/xoá; upload video metadata
-- [ ] **Progress reads** theo role: admin (toàn bộ), teacher (khóa mình + 受講者), 法人 (学生 mình), 学生 (bản thân) — có search/filter
-- **Test:** route tạm + Vitest cho rule scope
+### ⬛ Phase BE2 — Course/Video + Progress reads · **19–22/6** ✅
+- [x] **Course CRUD** (creator scope): teacher chỉ khóa mình; tạo/sửa/公開toggle/xoá; list scope+search+filter; reorder courses (admin) + reorder video (owner)
+- [x] **Video CRUD** + reorder, scope qua course cha
+- [x] **Progress reads** scoped: `listStudentsProgress` (admin/法人), `getCourseProgressOverview` (admin/教師, liệt kê 学生 ACTIVE kể cả 未学習)
+- [x] Action wrappers `content.ts`
+- **Test (đã verify):** 21 ca route tạm (CRUD/scope/publish/reorder/list/filter/search/progress) + Vitest 19/19
 
 ### ⬛ Phase C — Frontend nền: UI kit + Portal + Login · **23–27/6**
 - [ ] Port `ui.tsx`: tokens `T`, icons, **Btn/Badge/StatusSelect(有効·無効 inline)/Table/SearchBar/Bar/Ring/FormScreen(2-col full-screen)/Modal/Toast/IconBtn(icon-only +tooltip)/ConfirmModal**
