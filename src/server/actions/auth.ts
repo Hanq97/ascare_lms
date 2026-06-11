@@ -47,6 +47,17 @@ export async function loginAction(_prev: LoginState, formData: FormData): Promis
     };
   }
 
+  // Ghi thời điểm đăng nhập (lastLoginAt) vào đúng bảng theo role
+  const now = new Date();
+  const id = result.user.id;
+  if (result.user.role === "ADMIN")
+    await prisma.admin.update({ where: { id }, data: { lastLoginAt: now } });
+  else if (result.user.role === "TEACHER")
+    await prisma.teacher.update({ where: { id }, data: { lastLoginAt: now } });
+  else if (result.user.role === "CORP")
+    await prisma.corporation.update({ where: { id }, data: { lastLoginAt: now } });
+  else await prisma.student.update({ where: { id }, data: { lastLoginAt: now } });
+
   await setSession(result.user);
   await prisma.auditLog.create({
     data: { actorType: result.user.role, actorId: result.user.id, action: "LOGIN" },

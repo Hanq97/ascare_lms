@@ -6,6 +6,10 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [],
   },
+  experimental: {
+    // Cho phép upload video qua Server Action (mặc định giới hạn 1MB)
+    serverActions: { bodySizeLimit: "500mb" },
+  },
 };
 
 export default nextConfig;

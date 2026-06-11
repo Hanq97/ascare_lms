@@ -36,3 +36,6 @@ yarn-error.log*
 
 # design bundle (local reference only)
 /.design2/
+
+# uploaded media (runtime local storage). Asset seed mẫu giữ ở prisma/seed-assets/
+/uploads/
