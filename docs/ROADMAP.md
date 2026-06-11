@@ -1,265 +1,138 @@
-# ASCare LMS — Roadmap & Requirement Tracking
+# ASCare LMS — ROADMAP (v1.4 · 4 roles)
 
-Kế hoạch chi tiết từng phase + truy vết requirement để kiểm tra code có đúng 要件定義書 v1.2 (+ refinement từ chat design) hay không.
-
-> Quy ước: `[ ]` chưa làm · `[x]` xong · `[~]` đang làm.
-> **Mỗi phase xong → DỪNG cho review** rồi mới sang phase sau.
+**Deadline: 2026-07-20** (≈5.5 tuần từ 2026-06-11). Làm **tuần tự**, review từng sub-phase qua PR.
+Nguồn: 要件定義書 **v1.4** + 2 詳細設計書 (管理サイト 13 màn SC-A01–A13 · 利用者サイト 11 màn SC-U01–U11 = **24 màn**).
+Quy ước: `[ ]` chưa · `[x]` xong · `[~]` đang làm. Mỗi phase xong → review (qua PR vào `develop`).
 
 ---
 
-## 0. Trạng thái tổng quan
+## 0. Thay đổi LỚN v1.2 → v1.4 (ảnh hưởng kiến trúc)
 
-| Phase | Nội dung | Trạng thái |
+| # | Thay đổi | Ảnh hưởng |
 |---|---|---|
-| 0 | Nền tảng (DB, seed, scaffold, convention, Git/CI, README) | ✅ Xong |
-| 3 | Auth + RBAC | ✅ Xong (chờ review) |
-| 4A | Backend — Hạ tầng (ActionResult, audit, mail Mailpit, token PW) | ✅ Xong (chờ review) |
-| 4B | Backend — Logic 視聴率/進捗 + ViewLog (+ Vitest) | ✅ Xong (chờ review) |
-| 4C | Backend — CRUD tài khoản (admin/法人/学生 + cascade) | ⏳ |
-| 4D | Backend — CRUD nội dung + profile + read queries | ⏳ |
-| 5A | Frontend — Nền UI + Portal + Login đẹp | ⏳ |
-| 5B | Frontend — 管理サイト (7 đơn vị/màn) | ⏳ |
-| 5C | Frontend — 利用者サイト 法人 (6 đơn vị/màn) | ⏳ |
-| 5D | Frontend — 利用者サイト 学生 (4 đơn vị/màn) | ⏳ |
-| 6A | Video — Storage local (dev) + player + ghi 視聴ログ | ⏳ |
-| 6B | Video — S3 + CloudFront (chỉ swap driver) | ⏳ (chờ tài khoản AWS) |
-| 7 | Hoàn thiện phi chức năng + deploy | ⏳ |
+| 1 | **+教師 (Teacher) — role thứ 4** | Schema +Teacher; auth 4-table; RBAC scope; +màn teacher |
+| 2 | **Course có 作成者** (admin/teacher) | Course +`creatorType`+`adminId`/`teacherId`; teacher chỉ khóa của mình |
+| 3 | **法人 status: bỏ 停止 → chỉ 有効/無効** | `CorpStatus` SUSPENDED→INACTIVE; **法人無効 → cascade 学生無効** |
+| 4 | **CSV一括登録 học sinh (法人)** | Màn import CSV (template→preview→invite); cột 氏名/カナ/Email/国籍 |
+| 5 | **Invite-email cho CẢ 4 role** | Admin KHÔNG set password trực tiếp nữa; mọi tài khoản set PW qua mail |
+| 6 | **Self đổi mật khẩu trong profile** (教師/法人/学生 + admin) | Màn profile + modal đổi MK; admin reset người khác |
+| 7 | **Bỏ**: システム設定, 法人スタッフ, CARE code, category khóa | Không làm các phần này |
 
-> **Storage abstraction:** dùng interface `StorageProvider` (driver `local` giờ, `s3` sau).
-> `videos.url` luôn lưu **key** (vd `videos/v101.mp4`); driver resolve ra URL phát.
-> → Lên AWS = thêm driver + config env, KHÔNG sửa UI/DB/logic. KHÔNG dùng base64 cho video.
-> Video có thể làm sớm (6A) ngay sau Phase 4 nếu muốn, không cần chờ AWS.
+> Tham chiếu chi tiết màn hình: `.design2` (local) + 2 file 詳細設計書 ở root.
 
 ---
 
-## 1. Bảng truy vết yêu cầu chức năng (FR)
+## 1. Đã làm — TÁI DÙNG ĐƯỢC (Phase 1–4B đã merge vào develop)
 
-| ID | Chức năng | Phase | Trạng thái |
+| Hạng mục | Trạng thái | Ghi chú cho v1.4 |
+|---|---|---|
+| Nền tảng (Next.js, DB/Prisma, CI, gitflow, docs) | ✅ | giữ nguyên |
+| Auth infra (JWT cookie, middleware, bcrypt) | ✅ | **cần +TEACHER role, 4-table authenticate** |
+| Mail + token (invite/reset PW) | ✅ | tái dùng trọn cho invite-email 4 role |
+| Progress logic (視聴率/進捗 + Vitest) | ✅ | tái dùng (Phương án A) |
+| `PasswordField`, login/set-password (form tạm) | ✅ | login sẽ port design ở Phase C |
+| **4C account CRUD** (nhánh `feature/phase4c-accounts`, chưa merge) | ⏸️ | tái dùng phần admin/学生; **rework**: +teacher, +corp 有効/無効+cascade, +CSV |
+
+---
+
+## 2. KẾ HOẠCH v1.4 (target dates → 20/7)
+
+> ~5.5 tuần, làm tuần tự + review từng sub-phase. Thoải mái để làm kỹ + test.
+
+### ⬛ Phase M — Migration schema & auth 4-role · **11–14/6** ✅
+- [x] Schema: **+Teacher** (`id,name,nameKana,email,org?,passwordHash?,status,lastLoginAt`)
+- [x] Schema: **Course +creator** (`creatorType ADMIN|TEACHER`, `adminId?`, `teacherId?` + relations)
+- [x] Schema: **bỏ CorpStatus → AccountStatus** (有効/無効) + migration `v1_4_four_roles`
+- [x] Role type +`TEACHER`; `authenticate` 4 bảng; **cascade 法人無効→学生無効**; token/password +teacher
+- [x] middleware + `homeFor`: `/admin` cho ADMIN+TEACHER; `/app` cho CORP+STUDENT
+- [x] Seed: +3 teachers, course owner (5 admin/4 teacher), corp4 無効
+- [x] Cập nhật `DATA_MODEL.md` + `GLOSSARY.md` (4 role, creator, status)
+- **Test (đã verify):** login 4 role OK; s11 (corp4無効)→chặn; admin無効→chặn; course owner đúng; Vitest 15/15; build xanh
+
+### ⬛ Phase BE — Backend CRUD đầy đủ · **15–22/6**
+- [ ] **4C rework**: admin/教師/法人/学生 CRUD (invite-email, email khoá, status 有効/無効, bulk, chặn-xoá)
+  - 教師: create→invite, delete chặn nếu còn khóa
+  - 法人: 無効 → cascade 学生無効
+  - 学生: +bulk status/delete; 法人 chỉ 学生 của mình
+- [ ] **CSV import 学生 (法人)**: parse .csv UTF-8 (氏名/カナ/Email/国籍) → validate → tạo + invite hàng loạt
+- [ ] **Course/Video CRUD** (creator scope): teacher chỉ khóa mình; tạo/sửa/公開toggle/reorder/xoá; upload video metadata
+- [ ] **Progress reads** theo role: admin (toàn bộ), teacher (khóa mình + 受講者), 法人 (学生 mình), 学生 (bản thân)
+- **Test:** route tạm + Vitest cho rule scope/cascade
+
+### ⬛ Phase C — Frontend nền: UI kit + Portal + Login · **23–27/6**
+- [ ] Port `ui.tsx`: tokens `T`, icons, **Btn/Badge/StatusSelect(有効·無効 inline)/Table/SearchBar/Bar/Ring/FormScreen(2-col full-screen)/Modal/Toast/IconBtn(icon-only +tooltip)/ConfirmModal**
+- [ ] Portal landing (header logo + 法人ログイン/ユーザーログイン; KHÔNG có admin/teacher login; features; responsive + smartphone preview)
+- [ ] Login port design (4 role routing: admin/teacher→/admin, corp/student→/app) + set-password port design
+- [ ] Shell: 管理サイト (sidebar khác nhau admin↔teacher, header **講師ロール** badge cho teacher, PC-only + cảnh báo màn nhỏ) · 利用者サイト (responsive, <820px hamburger)
+
+### ⬛ Phase F — Video local (6A) + VideoPlayer component · **28/6–1/7**
+- [ ] Storage abstraction (driver `local`) + route phát `/api/videos/[id]/stream` có **auth + HTTP Range 206**
+- [ ] Upload thật (MP4/MOV; ERR-113) + lấy `durationSec` ở client; lưu key vào `videos.url`
+- [ ] `VideoPlayer` component: ghi `max_position` → `upsertViewLog` (4B); 100%→完了; 続きから từ `max_position`
+> Làm trước D/E vì SC-A10 (upload) và SC-U09 (xem) dùng component này.
+
+### ⬛ Phase D — 管理サイト (13 màn) · **2–11/7**
+- [ ] SC-A02 Admin Dashboard (6 KPI clickable) · SC-A03 **Teacher Dashboard** (4 KPI own-scope)
+- [ ] SC-A04 管理者管理 · SC-A05 **教師管理** (cột số khóa; **xoá chặn nếu còn khóa ERR-104**) · SC-A06 法人管理 (**郵便番号→住所検索**; xoá chặn nếu còn 学生) · SC-A07 学生管理 (**search + lọc 法人** + bulk status/delete)
+- [ ] SC-A08 コース管理: **creator tabs (すべて/管理者/教師)** + **search コース名+コース内容+作成者名** + **lọc 公開/非公開** + **lọc 作成日 (range)** + creator badge
+- [ ] SC-A09 コース詳細+video: drag reorder · **confirm modal cho 公開/非公開 toggle VÀ xoá lesson** · SC-A10 アップロード (dùng VideoPlayer/F)
+- [ ] SC-A11 学生進捗 (admin; search + lọc 法人) · SC-A12 コース別進捗 (admin+teacher; teacher ẩn creator tab) · SC-A13 Profile (admin+teacher; teacher sửa **所属教育機関** tuỳ chọn; **bỏ 最終ログイン**; đổi mật khẩu modal)
+- [ ] **Nút admin reset mật khẩu** người khác trên list/detail (FR-02)
+
+### ⬛ Phase E — 利用者サイト (11 màn) · **12–18/7**
+- [ ] SC-U02 法人Dashboard (4 KPI scope corp) · SC-U03 コース一覧 (preview, không ghi tiến độ) · SC-U06 進捗詳細 · SC-U07 法人プロフィール (住所検索, login khoá, đổi MK)
+- [ ] SC-U04 学生管理: **search + bulk** + **CSV一括登録** (template→dropzone .csv UTF-8→preview→invite; cột 氏名/カナ/Email/国籍; ERR-005) · SC-U05 学生発行/編集 (modal phát hành; màn riêng khi sửa; email khoá)
+- [ ] SC-U08 学生Home · SC-U09 動画視聴 (VideoPlayer/F) · SC-U10 マイ進捗 (3 nhóm) · SC-U11 学生プロフィール
+- [ ] SC-U01 Login (đã làm Phase C)
+
+### ⬛ Phase G — Chất lượng & deploy · **18–20/7**
+- [ ] **E2E (Playwright)** cho 3 luồng dễ hỏng: ① login phân nhánh 4 role · ② 法人無効→cascade 学生無効 · ③ teacher chỉ thấy/xoá khóa của mình
+- [ ] Responsive QA (利用者サイト PC/スマホ); 管理サイト cảnh báo PC-only
+- [ ] Rà phân quyền end-to-end · dọn kỹ thuật (prisma.config, warning), favicon
+- [ ] Deploy + env production (HTTPS); video S3/CloudFront (6B) khi có AWS
+
+> **Form tài khoản thống nhất (Phase D & E):** 1 `FormScreen` full-screen 2-col cho cả 4 role. Validation: email format + **khoá khi sửa**; **管理者 kana tuỳ chọn**; **学生 ローマ字 bắt buộc + đứng đầu**, katakana tuỳ (admin form) / **katakana bắt buộc** (corp form SC-U05) — đối chiếu kỹ trước khi code.
+
+### 🎯 Ưu tiên cứng (nếu trễ thì giữ các luồng này, giảm scope màn phụ)
+Login routing 4 role · cascade 法人無効→学生無効 · CSV import · 動画視聴 + ghi tiến độ · teacher own-courses-only. → Các màn profile/dashboard phụ có thể rút gọn nếu cần.
+
+### 🔒 Bổ sung chất lượng/bảo mật (rải trong M/BE/G)
+- [ ] **Rate-limit / khoá đăng nhập** sau N lần sai (login là cổng 4 role) — Phase M/BE
+- [ ] Backend list queries hỗ trợ **search/filter** params (cho SC-A07/A08/A11/U04) — Phase BE
+- [ ] Seed demo nhất quán: 3 教師, course owner admin/teacher, corp4 無効 — Phase M
+
+---
+
+## 3. Truy vết FR (v1.4)
+
+| FR | Chức năng | Phase | Trạng thái |
 |---|---|---|---|
-| FR-01 | ログイン・ログアウト | 3 | [x] |
-| FR-02 | パスワード再設定（管理者リセット） | 3, 4A | [x] (token + mail Mailpit + set-password; nút reset trên UI ở 5B) |
-| FR-03 | 同級管理者アカウント管理 | 4, 5B | [ ] |
-| FR-04 | 法人アカウント発行 | 4, 5B | [ ] |
-| FR-05 | 学生アカウント発行 | 4, 5B | [ ] |
-| FR-06 | 法人プロフィール管理（即時反映） | 4, 5C | [ ] |
-| FR-07 | コース管理 | 4, 5B | [ ] |
-| FR-08 | 動画アップロード・管理 | 4, 5B, 6A | [ ] |
-| FR-09 | 動画視聴（全コース） | 5D, 6A | [ ] |
-| FR-10 | 視聴完了判定（視聴率100%） | 4B | [x] |
-| FR-11 | 進捗自動計算 | 4B | [x] |
-| FR-12 | 進捗ダッシュボード | 5B, 5C, 5D | [ ] |
-| FR-13 | 操作ログ・監査 (Should) | 4 | [ ] |
+| FR-01 | ログイン・ログアウト | M, C | [~] (3-role xong; +teacher ở M) |
+| FR-02 | パスワード変更・リセット | BE, D/E | [~] (token+mail xong; UI ở profile) |
+| FR-03 | 同級管理者管理 | BE, D | [~] (4C có) |
+| FR-04 | **教師アカウント発行** | M, BE, D | [ ] |
+| FR-05 | 法人アカウント発行 | BE, D | [~] (4C có; +status) |
+| FR-06 | 学生発行 + **CSV一括** | BE, D, E | [~] (single có; +CSV) |
+| FR-07 | プロフィール (法人・教師) | BE, D/E | [ ] |
+| FR-08 | コース作成 (admin+教師) | BE, D | [ ] |
+| FR-09 | コース管理 (scope) | BE, D | [ ] |
+| FR-10 | 動画アップロード | BE, D, F | [ ] |
+| FR-11 | コース受講学生・進捗 | BE, D | [ ] |
+| FR-12 | 動画視聴 | E, F | [ ] |
+| FR-13 | 視聴完了判定 | (4B) | [x] |
+| FR-14 | 進捗自動計算 | (4B) | [x] |
+| FR-15 | 進捗ダッシュボード | BE, D, E | [~] (logic xong; UI) |
+| FR-16 | 操作ログ・監査 | (4A) | [x] ghi log (AuditLog) · **KHÔNG có UI xem log trong scope v1.4** |
 
-## 2. Bảng truy vết màn hình (SC) — đã cập nhật theo refinement chat
+## 4. Truy vết màn hình (24)
+- **管理サイト (13):** SC-A01 Login · A02 AdminDash · **A03 TeacherDash** · A04 管理者 · **A05 教師** · A06 法人 · A07 学生 · A08 コース管理 · A09 コース詳細 · A10 アップロード · A11 学生進捗 · A12 コース別進捗 · A13 Profile
+- **利用者サイト (11):** SC-U01 Login · U02 法人Dash · U03 コース一覧 · U04 学生管理+CSV · U05 学生発行/編集 · U06 進捗詳細 · U07 法人Profile · U08 学生Home · U09 動画視聴 · U10 マイ進捗 · U11 学生Profile
 
-### 管理サイト (PC only)
-| ID | Màn hình | Phase | Trạng thái |
-|---|---|---|---|
-| SC-A01 | ログイン | 3, 5A | [ ] |
-| SC-A02 | 管理ダッシュボード (bỏ 操作ログ, コース別平均, 分布) | 5B | [ ] |
-| SC-A03 | 管理者管理 (set PW trực tiếp, xoá) | 5B | [ ] |
-| SC-A04 | 法人管理 (有効/停止 cascade, xoá chặn nếu có 学生, 住所検索) | 5B | [ ] |
-| SC-A05 | 学生管理 (status pulldown, 修了コース数, bulk status/delete) | 5B | [ ] |
-| SC-A06 | コース管理 + コース詳細 (bỏ カテゴリ/CARE, thumbnail bắt buộc, drag video, publish toggle) | 5B | [ ] |
-| SC-A07 | 動画アップロード (レッスン名/詳細内容/動画 MP4·MOV) | 5B, 6A | [ ] |
-| SC-A08 | 学生進捗一覧 + 詳細 (修了コース数 N/7, 5/7) | 5B | [ ] |
-| ~~SC-A09~~ | ~~システム設定~~ | — | ❌ Đã bỏ |
+## 5. Schema đích (v1.4)
+- `Admin` (giữ) · **`Teacher`** (mới) · `Corporation` (status→有効/無効) · `Student` · `Course` (+creatorType/adminId/teacherId) · `Video` · `ViewLog` · `VerificationToken` · `AuditLog`
+- Enum: `AccountStatus{ACTIVE,INACTIVE}` dùng cho cả 4 role (bỏ `CorpStatus.SUSPENDED`); `CourseStatus{DRAFT,PUBLISHED}`; **`CreatorType{ADMIN,TEACHER}`**; `Role{ADMIN,TEACHER,CORP,STUDENT}`
 
-### 利用者サイト — 法人 (PC + mobile)
-| ID | Màn hình | Phase | Trạng thái |
-|---|---|---|---|
-| SC-U01 | ログイン | 3, 5A | [ ] |
-| SC-U02 | 法人プロフィール (avatar menu, login khoá, 住所検索, đổi MK) | 5C | [ ] |
-| SC-U03 | 法人ダッシュボード (KPI: 所属学生数/平均進捗/修了者数 + コース別) | 5C | [ ] |
-| SC-U04 | 学生進捗詳細 (bỏ 所属) | 5C | [ ] |
-| — | 学生管理 (法人): issue/edit màn riêng, CSV import, bulk | 5C | [ ] |
-| — | コース一覧 tab (xem như 学生, không 続きから) | 5C | [ ] |
-
-### 利用者サイト — 学生 (PC + mobile)
-| ID | Màn hình | Phase | Trạng thái |
-|---|---|---|---|
-| SC-U01 | ログイン | 3, 5A | [ ] |
-| SC-U05 | 学生ホーム (全コース, 続きから, 未学習 example) | 5D | [ ] |
-| SC-U06 | 動画視聴 (ghi 視聴ログ, 100%完了, bỏ hiển thị 視聴率%, block info) | 5D, 6A | [ ] |
-| SC-U07 | マイ進捗 (3 nhóm 修了/受講中/未学習 + thanh phân bố) | 5D | [ ] |
-| — | プロフィール (avatar dropdown, sửa+đồng bộ, 所属法人 khoá, đổi MK) | 5C/5D | [ ] |
-
----
-
-## 3. PHASE 3 — Auth + RBAC
-
-**Mục tiêu:** Đăng nhập bằng email cho 3 vai trò, bảo vệ route theo quyền, băm mật khẩu.
-**Liên quan:** FR-01, FR-02 · 非機能 (PW hash, RBAC, 法人 đa phiên).
-
-### Task
-- [x] Cài deps: `jose` (JWT) + `zod` (bcryptjs đã có)
-- [x] `src/lib/auth/password.ts` — hash & verify bcrypt (cost 10)
-- [x] `src/lib/auth/jwt.ts` — ký/giải mã JWT (edge-safe) + `SESSION_COOKIE`
-- [x] `src/lib/auth/session.ts` — set/clear/get cookie httpOnly
-- [x] `src/lib/auth/authenticate.ts` — tìm email qua 3 bảng (Admin→法人→学生), verify PW, trả `{ id, role, corpId? }`
-- [x] Chặn login khi `status` = INACTIVE/SUSPENDED; 法人 SUSPENDED → 学生 trực thuộc cũng bị chặn
-- [x] Server action `loginAction` / `logoutAction`
-- [x] `src/lib/auth/rbac.ts` — `getSession()`, `requireRole(...)`, `requireAuth()`
-- [x] `middleware.ts` — bảo vệ `/admin/*` (ADMIN), `/app/*` (CORP|STUDENT); redirect chưa login
-- [x] 法人 cho phép nhiều phiên đồng thời (JWT stateless)
-- [x] Ghi `AuditLog` LOGIN/LOGOUT (FR-13 phần login)
-- [x] Trang `/login` (form), `/admin` `/app` placeholder bảo vệ, `/` landing
-
-### Acceptance / cách kiểm thử — ĐÃ VERIFY
-- [x] Login đúng email/PW từng role → trả đúng role/corpId (9 ca test)
-- [x] Sai PW / INACTIVE / 法人 SUSPENDED / 学生 thuộc 法人 SUSPENDED → bị từ chối
-- [x] Truy cập `/admin` khi chưa login → 307 redirect `/login?next=/admin`
-- [x] format/lint/typecheck/build xanh
-
-**⏸️ Review checkpoint sau Phase 3.**
-
----
-
-## 4. PHASE 4 — Backend (API / Server Actions + logic nghiệp vụ)
-
-**Mục tiêu:** Toàn bộ CRUD + logic 視聴率/進捗, validate, RBAC ở server. Chưa cần UI đẹp.
-**Liên quan:** FR-02..FR-08, FR-10, FR-11, FR-13.
-Tách 4 sub-phase, **dừng review sau mỗi sub-phase**.
-
-### 4A — Hạ tầng backend ✅
-- [x] `src/lib/result.ts` — `ActionResult<T> = { ok:true; data } | { ok:false; error }` + `ok()/fail()`
-- [x] `src/lib/audit.ts` — helper ghi `AuditLog`
-- [x] `src/lib/mail.ts` — Nodemailer + **Mailpit** (SMTP :1025, UI :8025); fallback console khi không có SMTP_HOST
-- [x] `src/server/services/token.ts` — create/verify/consume `VerificationToken` (SETUP 3d / RESET 1h) + `issuePasswordSetup`/`issuePasswordReset`
-- [x] `src/server/actions/password.ts` — `adminResetPasswordAction` (FR-02) + `setPasswordAction`
-- [x] Trang `/set-password?token=...` (đặt mật khẩu qua link mail)
-- [x] docker-compose: thêm Mailpit; env `APP_URL`, `SMTP_*`, `MAIL_FROM`
-- **Test (đã verify route tạm + Mailpit):** create→verify→consume→login PW mới OK; reuse/expired bị từ chối; mail vào Mailpit; khôi phục seed
-
-### 4B — Logic 視聴率/進捗 (lõi) + Vitest ✅
-- [x] `progress-calc.ts` (hàm thuần): `videoWatchedPercent`, `courseProgressPercent`, `classifyCourse`, `overallProgressPercent`
-- [x] `progress.ts` (DB): `upsertViewLog` (Phương án A), `getCourseProgress`, `getOverallProgress`, `getStudentProgressSummary`
-- [x] **Vitest**: cài + config; 15 unit test (biên 99%/100%, 5/7, rỗng…)
-- [x] CI: thêm bước `npm run test`
-- [x] Đổi tên `pct→percent`, `klass→category` (cột DB `watched_pct→watched_percent`, migration RENAME giữ data)
-- [x] `docs/GLOSSARY.md` (mapping thuật ngữ↔code↔DB)
-- **Test (đã verify):** Vitest 15/15 + đối chiếu seed (overall s1=76, s5=88, summary 修了5/受講中2/未学習1, upsert completed)
-
-### 4C — CRUD tài khoản (RBAC + validate)
-- [ ] 管理者: create (set PW trực tiếp), update, delete, toggle status — ADMIN
-- [ ] 法人: create (gửi mail set PW), update (email khoá), delete (**chặn nếu còn 学生**), toggle 有効/停止 (**cascade khoá 学生**) — ADMIN
-- [ ] 学生: create (gửi mail), update, delete, toggle status, **bulk status/delete** — ADMIN; 法人 chỉ thao tác 学生 của mình
-- **Test:** từng thao tác + ràng buộc cascade/chặn-xoá + scope phân quyền
-
-### 4D — CRUD nội dung + profile + read queries
-- [ ] コース: create/update (thumbnail bắt buộc, default 非公開), publish toggle, sắp xếp video — ADMIN
-- [ ] 動画: thêm/sửa/xoá + đổi thứ tự (metadata; file ở Phase 6A) — ADMIN
-- [ ] 法人 tự sửa profile (login khoá, đồng bộ tức thời) — CORP
-- [ ] 学生 tự sửa profile + đổi mật khẩu — STUDENT
-- [ ] Query đọc cho dashboard từng role (scope đúng quyền)
-- **Test:** CRUD + scope đọc đúng quyền
-
-### Acceptance (toàn Phase 4)
-- [ ] Mọi action kiểm tra quyền ở server (không tin client)
-- [ ] 法人 không truy được 学生 của 法人 khác
-- [ ] Tính tiến độ khớp số liệu seed (+ Vitest xanh)
-- [ ] Xoá 法人 còn 学生 → bị chặn; 停止 法人 → 学生 bị khoá login
-
-**⏸️ Review checkpoint sau mỗi sub-phase (4A→4B→4C→4D).**
-
----
-
-## 5. PHASE 5 — Frontend (port UI design)
-
-**Mục tiêu:** Dựng lại pixel-perfect UI từ design, nối vào backend. Inline styles + tokens `T`. Responsive cho 利用者サイト.
-**Liên quan:** FR-03..FR-09, FR-12 · SC-*.
-
-**Cách làm:** mỗi đơn vị (5x.n) = build → test browser → review → commit. Dừng review sau từng đơn vị.
-
-### 5A — Nền UI + Portal + Login đẹp
-- [ ] 5A.1 Port `ui.tsx`: tokens `T`, icons `I`, `Btn/Badge/Bar/Ring/Card/Field/Input/Modal/useToast`, `Logo`
-- [ ] 5A.2 Layout responsive (hook width) + khung 2 site; 管理サイト cảnh báo PC-only màn nhỏ
-- [ ] 5A.3 Homepage portal (header logo + 法人ログイン/ユーザーログイン, hero, features; bỏ admin login & course stats)
-- [ ] 5A.4 Login UI đẹp (thay form tạm Phase 3) — 3 ngữ cảnh role
-
-### 5B — 管理サイト (mỗi màn 1 đơn vị)
-- [ ] 5B.1 AdminShell (sidebar) + SC-A02 Dashboard (KPI gọn)
-- [ ] 5B.2 SC-A03 管理者管理 (list + form set PW + delete)
-- [ ] 5B.3 SC-A04 法人管理 (list + form 住所検索 + delete chặn + 有効/停止)
-- [ ] 5B.4 SC-A05 学生管理 (status pulldown + bulk + form)
-- [ ] 5B.5 SC-A06 コース管理 + コース詳細 (drag video, publish toggle)
-- [ ] 5B.6 SC-A07 動画アップロード UI (nối 6A)
-- [ ] 5B.7 SC-A08 学生進捗一覧 + 詳細
-
-### 5C — 利用者サイト 法人 (mỗi màn 1 đơn vị)
-- [ ] 5C.1 CorpShell (nav + avatar menu) + SC-U03 Dashboard (KPI + コース別)
-- [ ] 5C.2 学生管理 (法人): list + issue/edit màn riêng + bulk
-- [ ] 5C.3 CSV一括登録 (template + preview)
-- [ ] 5C.4 SC-U04 学生進捗詳細 (bỏ 所属)
-- [ ] 5C.5 コース一覧 + course detail (player, không 続きから)
-- [ ] 5C.6 SC-U02 法人プロフィール (login khoá, 住所検索, đổi MK)
-
-### 5D — 利用者サイト 学生 (mỗi màn 1 đơn vị)
-- [ ] 5D.1 StudentShell (nav + avatar) + SC-U05 ホーム (全コース, 続きから, 未学習)
-- [ ] 5D.2 SC-U06 動画視聴 (player + block info + 100%完了) — **phụ thuộc 6A** (nên làm 6A trước)
-- [ ] 5D.3 SC-U07 マイ進捗 (3 nhóm + thanh phân bố)
-- [ ] 5D.4 プロフィール (sửa + đồng bộ, 所属法人 khoá, đổi MK)
-
-> **Thứ tự gợi ý:** 5A → 5B → 5C → (6A) → 5D, vì 5D.2 動画視聴 cần video (6A) chạy trước.
-
-### Acceptance (toàn Phase 5)
-- [ ] Pixel khớp design (bố cục, màu, font Noto Sans JP)
-- [ ] 利用者サイト tốt trên mobile; 管理サイト cảnh báo PC-only màn nhỏ
-- [ ] Dữ liệu thật từ DB, CRUD chạy
-
-**⏸️ Review sau mỗi đơn vị (5A.x / 5B.x / 5C.x / 5D.x).**
-
----
-
-## 6. PHASE 6 — Video
-
-**Mục tiêu:** Upload & phát video an toàn (bảo vệ), ghi tiến độ thật.
-**Liên quan:** FR-08, FR-09, FR-10 · 非機能 (CDN, 署名付きURL, 動画保護).
-
-> Tách thành 6A (local, làm ngay không cần AWS) và 6B (S3/CloudFront, swap driver).
-> Cốt lõi: **lớp trừu tượng Storage** để app không phụ thuộc nơi lưu video.
-
-### 6A — Storage local (dev) + player + tiến độ
-- [ ] `src/lib/storage/types.ts` — interface `StorageProvider { getUploadTarget(key), getPlaybackUrl(key), save(...) }`
-- [ ] `src/lib/storage/local.ts` — driver local: lưu file vào `storage/videos/` (gitignore)
-- [ ] `src/lib/storage/index.ts` — chọn driver theo env `STORAGE_DRIVER` (mặc định `local`)
-- [ ] Route upload (admin): nhận MP4/MOV + `duration_sec` (lấy ở client qua `loadedmetadata`), lưu key vào `videos.url`
-- [ ] Route phát `/api/videos/[id]/stream` — **có auth** (mô phỏng 動画保護) + **HTTP Range (206)** để tua được
-- [ ] 学生 視聴: player phát qua route, ghi `max_position` → `upsertViewLog` (Phase 4)
-- [ ] "Xem tiếp từ chỗ cũ" dùng `max_position`
-
-**Acceptance 6A**
-- [ ] Upload chạy; video chỉ xem được khi đã đăng nhập (không truy cập trực tiếp file)
-- [ ] Tua (seek) hoạt động (Range 206)
-- [ ] Xem → 視聴率 tăng; chạm 100% → completed; 進捗 cập nhật; reload → xem tiếp đúng vị trí
-
-### 6B — S3 + CloudFront (khi có tài khoản AWS)
-- [ ] Cài `@aws-sdk/client-s3`, `@aws-sdk/s3-request-presigner`, `@aws-sdk/cloudfront-signer`
-- [ ] `src/lib/storage/s3.ts` — driver S3: presigned PUT (upload) + CloudFront **Signed URL** (phát)
-- [ ] Đổi `STORAGE_DRIVER=s3` + cấu hình env (bucket, CloudFront domain/key-pair/private key)
-- [ ] KHÔNG sửa UI/DB/logic — chỉ swap driver
-
-**Acceptance 6B**
-- [ ] Không truy cập trực tiếp S3 (chỉ qua signed URL); mọi hành vi như 6A
-
-**⏸️ Review checkpoint sau 6A và sau 6B.**
-
----
-
-## 7. PHASE 7 — Phi chức năng & Deploy
-
-**Liên quan:** mục 10 非機能要件. Mỗi mục = 1 đơn vị review/test.
-- [ ] 7.1 Rà soát phân quyền end-to-end + bảo vệ PII (法人 chỉ xem 学生 mình) — viết case kiểm thử
-- [ ] 7.2 QA responsive toàn 利用者サイト (PC/スマホ)
-- [ ] 7.3 Log/giám sát lỗi
-- [ ] 7.4 Backup DB + quy trình phục hồi
-- [ ] 7.5 Dọn kỹ thuật: `package.json#prisma` → `prisma.config.ts`; rà các warning build (jose/Edge, font)
-- [ ] 7.6 Deploy (Vercel/AWS) + env production + HTTPS
-
-**⏸️ Review từng mục.**
-
----
-
-## 8. Ngoài phạm vi (要件 — KHÔNG làm)
-テスト作成・採点 · 多言語UI · CSV xuất báo cáo · PDF配布 · コース割当 · 通知 · 課金 · ライブ配信 · SNS · 給与/勤怠連携 · ネイティブアプリ.
-> Lưu ý: **CSV import 学生 (法人)** CÓ trong design (Phase 5C) — khác với "CSV xuất báo cáo" bị loại.
+## 6. Ghi chú timeline
+- Deadline **20/7** (~5.5 tuần). Phần đầu (M→D) thong thả; **đuôi căng**: Phase E = 11 màn trong 7 ngày (12–18/7), Phase G = 3 ngày (18–20/7) gồm cả E2E + responsive QA + deploy → **buffer thực tế ~0**.
+- **Slack nếu trễ:** rút gọn các màn phụ (dashboard/profile) theo mục **🎯 Ưu tiên cứng** ở trên; giữ cứng các luồng lõi. Cân nhắc dồn 1–2 ngày từ phần đầu sang đuôi nếu phát sinh.
+- Video S3/CloudFront (6B) làm **khi có tài khoản AWS**; trước đó dùng local (6A) để chạy đủ luồng.

@@ -1,14 +1,15 @@
 import { requireRole } from "@/lib/auth/rbac";
 import { logoutAction } from "@/server/actions/auth";
 
-// 管理サイト — placeholder (UI đầy đủ ở Phase 5B). Bảo vệ: chỉ ADMIN.
+// 管理サイト — placeholder (UI đầy đủ ở Phase D). Bảo vệ: 管理者 + 教師.
 export default async function AdminHome() {
-  const user = await requireRole("ADMIN");
+  const user = await requireRole("ADMIN", "TEACHER");
+  const roleLabel = user.role === "ADMIN" ? "管理者" : "教師";
 
   return (
     <main style={{ maxWidth: 560, margin: "60px auto", padding: "0 20px" }}>
       <p style={{ fontSize: 12.5, fontWeight: 700, color: "#2563eb", letterSpacing: 0.1 }}>
-        管理サイト / Admin
+        管理サイト / {roleLabel}
       </p>
       <h1 style={{ fontSize: 24, fontWeight: 900, margin: "4px 0 8px" }}>
         ようこそ、{user.name} さん

@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { decodeSession, SESSION_COOKIE } from "@/lib/auth/jwt";
+import { ADMIN_SITE_ROLES } from "@/lib/auth/types";
 
 // Bảo vệ route theo vai trò. Chỉ dùng jose (edge-safe), không chạm DB.
 export async function middleware(req: NextRequest) {
@@ -15,12 +16,14 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // 管理サイト chỉ cho ADMIN
-  if (pathname.startsWith("/admin") && session.role !== "ADMIN") {
+  const isAdminSite = ADMIN_SITE_ROLES.includes(session.role);
+
+  // 管理サイト chỉ cho 管理者/教師
+  if (pathname.startsWith("/admin") && !isAdminSite) {
     return NextResponse.redirect(new URL("/app", req.url));
   }
   // 利用者サイト chỉ cho 法人/学生
-  if (pathname.startsWith("/app") && session.role === "ADMIN") {
+  if (pathname.startsWith("/app") && isAdminSite) {
     return NextResponse.redirect(new URL("/admin", req.url));
   }
 

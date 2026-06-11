@@ -6,7 +6,7 @@ import { hashPassword } from "@/lib/auth/password";
 import { sendPasswordSetupMail, sendPasswordResetMail } from "@/lib/mail";
 import { ok, fail, type ActionResult } from "@/lib/result";
 
-export type TokenUserType = "ADMIN" | "CORP" | "STUDENT";
+export type TokenUserType = "ADMIN" | "TEACHER" | "CORP" | "STUDENT";
 
 const APP_URL = process.env.APP_URL ?? "http://localhost:3000";
 const TTL_MS: Record<TokenPurpose, number> = {
@@ -81,6 +81,8 @@ export async function consumePasswordToken(
   await prisma.$transaction(async (tx) => {
     if (userType === "ADMIN") {
       await tx.admin.update({ where: { id: userId }, data: { passwordHash } });
+    } else if (userType === "TEACHER") {
+      await tx.teacher.update({ where: { id: userId }, data: { passwordHash } });
     } else if (userType === "CORP") {
       await tx.corporation.update({ where: { id: userId }, data: { passwordHash } });
     } else {
