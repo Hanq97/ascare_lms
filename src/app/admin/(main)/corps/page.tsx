@@ -1,10 +1,36 @@
-import { ScreenPlaceholder } from "@/components/ui";
+import { requireRole } from "@/lib/auth/rbac";
+import { prisma } from "@/lib/prisma";
+import { CorpAccountsClient } from "./CorpAccountsClient";
 
-export default function CorpAccountsPage() {
+export const dynamic = "force-dynamic";
+
+export default async function CorpAccountsPage() {
+  await requireRole("ADMIN");
+  const corps = await prisma.corporation.findMany({
+    orderBy: { createdAt: "desc" }, // mới nhất lên đầu
+    select: {
+      id: true,
+      name: true,
+      nameKana: true,
+      personName: true,
+      email: true,
+      phone: true,
+      status: true,
+      _count: { select: { students: true } },
+    },
+  });
   return (
-    <ScreenPlaceholder
-      title="法人管理"
-      sub="法人アカウントの発行・編集・無効化（無効化で所属学生も無効）。"
+    <CorpAccountsClient
+      corps={corps.map((c) => ({
+        id: c.id,
+        name: c.name,
+        nameKana: c.nameKana,
+        personName: c.personName,
+        email: c.email,
+        phone: c.phone,
+        status: c.status,
+        studentCount: c._count.students,
+      }))}
     />
   );
 }

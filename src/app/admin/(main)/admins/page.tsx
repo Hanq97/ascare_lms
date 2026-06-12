@@ -1,5 +1,14 @@
-import { ScreenPlaceholder } from "@/components/ui";
+import { requireRole } from "@/lib/auth/rbac";
+import { prisma } from "@/lib/prisma";
+import { AdminAccountsClient } from "./AdminAccountsClient";
 
-export default function AdminAccountsPage() {
-  return <ScreenPlaceholder title="管理者管理" sub="管理者アカウントの発行・編集・無効化。" />;
+export const dynamic = "force-dynamic";
+
+export default async function AdminAccountsPage() {
+  const me = await requireRole("ADMIN");
+  const admins = await prisma.admin.findMany({
+    orderBy: { createdAt: "desc" }, // mới nhất lên đầu
+    select: { id: true, name: true, email: true, status: true },
+  });
+  return <AdminAccountsClient admins={admins} meId={me.id} />;
 }

@@ -3,7 +3,14 @@
 // Upload video (admin/教師) + ghi 視聴ログ khi 学生 xem (Phương án A).
 import path from "path";
 import { requireAuth } from "@/lib/auth/rbac";
-import { saveVideo, mediaUrl, ALLOWED_VIDEO_EXT } from "@/lib/storage";
+import {
+  saveVideo,
+  mediaUrl,
+  ALLOWED_VIDEO_EXT,
+  saveImage,
+  imageUrl,
+  ALLOWED_IMAGE_EXT,
+} from "@/lib/storage";
 import { upsertViewLog } from "@/server/services/progress";
 import { logAudit } from "@/lib/audit";
 import { ok, fail, type ActionResult } from "@/lib/result";
@@ -30,6 +37,30 @@ export async function uploadVideoAction(
   const key = await saveVideo(buffer, ext);
   await logAudit({ actorType: actor.role, actorId: actor.id, action: "UPLOAD_VIDEO", target: key });
   return ok({ key, url: mediaUrl(key) });
+}
+
+const MAX_IMAGE_BYTES = 8 * 1024 * 1024; // 8MB
+
+/** Upload 1 ảnh thumbnail コース → trả về { key, url }. Chỉ ADMIN/教師. */
+export async function uploadImageAction(
+  formData: FormData,
+): Promise<ActionResult<{ key: string; url: string }>> {
+  const actor = await requireAuth();
+  if (actor.role !== "ADMIN" && actor.role !== "TEACHER") return fail("権限がありません。");
+
+  const file = formData.get("file");
+  if (!(file instanceof File)) return fail("画像ファイルを選択してください。");
+  if (file.size === 0) return fail("ファイルが空です。");
+  if (file.size > MAX_IMAGE_BYTES) return fail("画像サイズが大きすぎます（最大8MB）。");
+
+  const ext = path.extname(file.name).toLowerCase();
+  if (!ALLOWED_IMAGE_EXT.includes(ext))
+    return fail(`対応していない形式です（${ALLOWED_IMAGE_EXT.join(" / ")}）。`);
+
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const key = await saveImage(buffer, ext);
+  await logAudit({ actorType: actor.role, actorId: actor.id, action: "UPLOAD_IMAGE", target: key });
+  return ok({ key, url: imageUrl(key) });
 }
 
 /**

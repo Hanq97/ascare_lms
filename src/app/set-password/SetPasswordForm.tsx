@@ -48,7 +48,7 @@ export default function SetPasswordForm({ token }: { token: string }) {
               パスワードを設定しました。ログインしてください。
             </div>
             <Link
-              href="/login"
+              href={state.loginHref ?? "/login"}
               style={{
                 display: "inline-flex",
                 alignItems: "center",

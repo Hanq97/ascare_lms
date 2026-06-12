@@ -16,7 +16,10 @@ const NO_PERMISSION = "権限がありません。";
 export type StudentProgressRow = {
   studentId: string;
   name: string;
+  nameKana: string;
+  corpId: string;
   corpName: string;
+  country: string;
   overall: number;
   done: number;
   inProgress: number;
@@ -55,7 +58,10 @@ export async function listStudentsProgress(
     rows.push({
       studentId: s.id,
       name: s.name,
+      nameKana: s.nameKana,
+      corpId: s.corpId,
       corpName: s.corp.name,
+      country: s.country,
       overall: summary.overall,
       done: summary.done,
       inProgress: summary.inProgress,
@@ -68,11 +74,15 @@ export async function listStudentsProgress(
 export type CourseLearnerRow = {
   studentId: string;
   name: string;
+  nameKana: string;
+  corpId: string;
   corpName: string;
+  country: string;
   done: number;
   total: number;
   percent: number;
   category: CourseProgressCategory;
+  lastViewedAt: Date | null; // 最終視聴
 };
 
 export type CourseProgressOverview = {
@@ -107,17 +117,35 @@ export async function getCourseProgressOverview(
     orderBy: { createdAt: "asc" },
   });
 
+  // 最終視聴: 1 truy vấn gom max(updatedAt) theo 学生 trên các 動画 của khóa
+  const courseVideoIds = (
+    await prisma.video.findMany({ where: { courseId }, select: { id: true } })
+  ).map((v) => v.id);
+  const lastViews =
+    courseVideoIds.length === 0
+      ? []
+      : await prisma.viewLog.groupBy({
+          by: ["studentId"],
+          where: { videoId: { in: courseVideoIds } },
+          _max: { updatedAt: true },
+        });
+  const lastMap = new Map(lastViews.map((r) => [r.studentId, r._max.updatedAt ?? null]));
+
   const learners: CourseLearnerRow[] = [];
   for (const s of students) {
     const p = await getCourseProgress(s.id, courseId);
     learners.push({
       studentId: s.id,
       name: s.name,
+      nameKana: s.nameKana,
+      corpId: s.corpId,
       corpName: s.corp.name,
+      country: s.country,
       done: p.done,
       total: p.total,
       percent: p.percent,
       category: classifyCourse(p.percent),
+      lastViewedAt: lastMap.get(s.id) ?? null,
     });
   }
 
