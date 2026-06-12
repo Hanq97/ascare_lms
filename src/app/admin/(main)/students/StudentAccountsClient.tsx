@@ -42,12 +42,13 @@ export function StudentAccountsClient({ students, corps }: { students: Row[]; co
   const [page, setPage] = useState(1);
   const [toastNode, toast] = useToast();
 
+  const ql = q.trim().toLowerCase();
   const rows = students.filter(
     (s) =>
       (corp === "all" || s.corpId === corp) &&
-      (s.name.includes(q) ||
-        s.nameKana.toLowerCase().includes(q.toLowerCase()) ||
-        s.email.toLowerCase().includes(q.toLowerCase())),
+      (s.name.toLowerCase().includes(ql) ||
+        s.nameKana.toLowerCase().includes(ql) ||
+        s.email.toLowerCase().includes(ql)),
   );
   useEffect(() => setPage(1), [q, corp]);
   const pageRows = rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);

@@ -4,7 +4,10 @@ import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/auth/rbac";
 import { prisma } from "@/lib/prisma";
 import { getStudentProgressSummary } from "@/server/services/progress";
-import { Card, Ring, Bar, Badge, T, I } from "@/components/ui";
+import { Card, Ring, Bar, Badge } from "@/components/ui";
+// SERVER component: import T/I trực tiếp từ source (xem ghi chú ở dashboard page.tsx).
+import { T } from "@/components/ui/tokens";
+import { I } from "@/components/ui/icons";
 
 export const dynamic = "force-dynamic";
 

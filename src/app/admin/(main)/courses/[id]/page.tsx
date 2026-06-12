@@ -30,6 +30,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
     title: v.title,
     detail: v.detail,
     durationSec: v.durationSec,
+    url: v.url, // KEY gốc — cần để gửi lại khi sửa lesson mà không thay video
     playUrl: mediaSrc(v.url),
   }));
 

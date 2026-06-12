@@ -534,13 +534,14 @@ Quản lý bằng một CSDL duy nhất, đồng bộ tức thời xuyên suốt
 | 3 | Thêm bài học | Button | — | — | — | Khởi động Tải video (SC-A10) |
 | 4 | Hàng video | List | — | — | — | No・thumbnail・tên bài・thời lượng |
 | 5 | Sắp xếp lại | Kéo-thả | — | — | — | Kéo icon đầu hàng |
-| 6 | Xem trước/Xóa | Icon | — | — | — | Xem trước・Xóa (modal xác nhận) |
+| 6 | Xem trước/Sửa/Xóa | Icon | — | — | — | Xem trước・Sửa bài học (modal「レッスンを編集」)・Xóa (modal xác nhận) |
 
 **Xử lý・Sự kiện**
 
 - **Đổi công khai:** Modal xác nhận (CNF-002) → xác nhận thì phản ánh trạng thái và hiện toast.
 - **Sắp xếp lại:** Kéo-thả để cập nhật thứ tự (đánh số lại No).
 - **Xem trước:** Hiện modal xem trước video.
+- **Sửa bài học:** Mở modal「レッスンを編集」, prefill tên・chi tiết hiện tại. Video là tùy chọn (mục「動画ファイルを差し替え」): không chọn file mới thì giữ video cũ, chỉ sửa tên/chi tiết cũng lưu được; chọn file mới thì thay video. Nút「保存」→ cập nhật hàng ngay + toast.
 - **Xóa bài học:** Modal xác nhận (Xóa bài học) → xác nhận thì xóa video đó và đánh số lại.
 
 **Kiểm tra đầu vào:** — (thao tác).
@@ -553,7 +554,7 @@ Quản lý bằng một CSDL duy nhất, đồng bộ tức thời xuyên suốt
 
 **Chuyển màn hình:** SC-A08 Quản lý khóa học (Quay lại); SC-A10 Tải video (Thêm bài học).
 
-**Thông báo:** `INF-111` — Đã đổi thứ tự video. ・ `INF-112` — Đã công khai/bỏ công khai khóa học. ・ `INF-116` — Đã xóa video. ・ `CNF-002` (Xác nhận) — Công khai/bỏ công khai khóa học. Bạn có chắc chắn? ・ `CNF-003` (Xác nhận) — Xóa bài học "#N 〇〇". Dữ liệu xem・tiến độ cũng bị xóa và không thể hoàn tác.
+**Thông báo:** `INF-111` — Đã đổi thứ tự video. ・ `INF-112` — Đã công khai/bỏ công khai khóa học. ・ `INF-116` — Đã xóa video. ・ `INF-117` — Đã lưu "〇〇" (sửa bài học). ・ `CNF-002` (Xác nhận) — Công khai/bỏ công khai khóa học. Bạn có chắc chắn? ・ `CNF-003` (Xác nhận) — Xóa bài học "#N 〇〇". Dữ liệu xem・tiến độ cũng bị xóa và không thể hoàn tác.
 
 ---
 

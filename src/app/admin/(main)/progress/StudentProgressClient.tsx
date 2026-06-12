@@ -31,8 +31,11 @@ export function StudentProgressClient({
   const [corp, setCorp] = useState("all");
   const [page, setPage] = useState(1);
 
+  const ql = q.trim().toLowerCase();
   const list = rows.filter(
-    (s) => (corp === "all" || s.corpId === corp) && (s.name.includes(q) || s.nameKana.includes(q)),
+    (s) =>
+      (corp === "all" || s.corpId === corp) &&
+      (s.name.toLowerCase().includes(ql) || s.nameKana.toLowerCase().includes(ql)),
   );
   useEffect(() => setPage(1), [q, corp]);
   const pageList = list.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);

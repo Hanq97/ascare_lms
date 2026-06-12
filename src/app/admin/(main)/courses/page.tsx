@@ -11,7 +11,7 @@ export default async function CoursesPage() {
 
   const courses = await prisma.course.findMany({
     where: isTeacher ? { creatorType: "TEACHER", teacherId: user.id } : {},
-    orderBy: { order: "asc" },
+    orderBy: { createdAt: "desc" },
     include: {
       admin: { select: { name: true } },
       teacher: { select: { name: true } },
