@@ -21,6 +21,11 @@ textarea,
 select {
   font-family: inherit;
 }
+/* Link kế thừa màu chữ — design không dùng màu link mặc định (xanh/tím :visited) */
+a {
+  color: inherit;
+  text-decoration: none;
+}
 input,
 textarea,
 select {
@@ -54,6 +59,15 @@ code {
   to {
     opacity: 1;
     transform: scale(1);
+  }
+}
+@keyframes skel {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
   }
 }
 select {

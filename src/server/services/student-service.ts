@@ -18,15 +18,15 @@ function canManage(actor: SessionUser, student: Pick<Student, "corpId">): boolea
 }
 
 const createSchema = z.object({
-  name: z.string().trim().min(1, "氏名（カタカナ）を入力してください。"),
-  nameKana: z.string().trim().default(""), // 氏名ローマ字 (tuỳ chọn ở tầng này)
+  nameKana: z.string().trim().min(1, "氏名（ローマ字）を入力してください。"), // ローマ字 bắt buộc
+  name: z.string().trim().default(""), // 氏名カタカナ (tuỳ chọn ở admin form)
   email: z.string().trim().toLowerCase().email("メールアドレスの形式が正しくありません。"),
   country: z.string().trim().min(1, "国籍を入力してください。"),
   corpId: z.string().trim().min(1).optional(), // ADMIN: bắt buộc; CORP: bỏ qua (ép theo session)
 });
 const updateSchema = z.object({
-  name: z.string().trim().min(1),
-  nameKana: z.string().trim().default(""),
+  nameKana: z.string().trim().min(1, "氏名（ローマ字）を入力してください。"),
+  name: z.string().trim().default(""),
   country: z.string().trim().min(1),
 });
 

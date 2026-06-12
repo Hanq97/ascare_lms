@@ -16,12 +16,12 @@ const ensureAdmin = (a: SessionUser): Err | null =>
 
 const baseFields = {
   name: z.string().trim().min(1, "法人名を入力してください。"),
-  nameKana: z.string().trim().min(1, "法人名（カナ）を入力してください。"),
+  nameKana: z.string().trim().default(""), // tuỳ chọn (theo design)
   personName: z.string().trim().min(1, "担当者名を入力してください。"),
-  personKana: z.string().trim().min(1, "担当者名（カナ）を入力してください。"),
-  phone: z.string().trim().min(1, "電話番号を入力してください。"),
-  postal: z.string().trim().min(1, "郵便番号を入力してください。"),
-  address: z.string().trim().min(1, "住所を入力してください。"),
+  personKana: z.string().trim().default(""), // tuỳ chọn
+  phone: z.string().trim().default(""), // tuỳ chọn
+  postal: z.string().trim().default(""), // tuỳ chọn
+  address: z.string().trim().default(""), // tuỳ chọn
 };
 const createSchema = z.object({
   ...baseFields,

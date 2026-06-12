@@ -1,7 +1,40 @@
-import { ScreenPlaceholder } from "@/components/ui";
+import { requireRole } from "@/lib/auth/rbac";
+import { prisma } from "@/lib/prisma";
+import { StudentAccountsClient } from "./StudentAccountsClient";
 
-export default function StudentAccountsPage() {
+export const dynamic = "force-dynamic";
+
+export default async function StudentAccountsPage() {
+  await requireRole("ADMIN");
+  const [students, corps] = await Promise.all([
+    prisma.student.findMany({
+      orderBy: { createdAt: "desc" }, // mới nhất lên đầu
+      select: {
+        id: true,
+        name: true,
+        nameKana: true,
+        country: true,
+        corpId: true,
+        email: true,
+        status: true,
+        corp: { select: { name: true } },
+      },
+    }),
+    prisma.corporation.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true } }),
+  ]);
   return (
-    <ScreenPlaceholder title="学生管理" sub="学生アカウントの発行・編集・一括操作・CSV取込。" />
+    <StudentAccountsClient
+      students={students.map((s) => ({
+        id: s.id,
+        name: s.name,
+        nameKana: s.nameKana,
+        country: s.country,
+        corpId: s.corpId,
+        corpName: s.corp.name,
+        email: s.email,
+        status: s.status,
+      }))}
+      corps={corps}
+    />
   );
 }

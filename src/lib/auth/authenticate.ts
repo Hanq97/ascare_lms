@@ -64,7 +64,7 @@ export async function authenticate(email: string, password: string): Promise<Aut
         id: student.id,
         role: "STUDENT",
         email: student.email,
-        name: student.name,
+        name: student.name || student.nameKana, // katakana tuỳ chọn → fallback ローマ字
         corpId: student.corpId,
       },
     };

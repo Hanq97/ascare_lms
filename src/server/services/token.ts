@@ -71,7 +71,7 @@ export async function verifyPasswordToken(token: string): Promise<VerifyResult> 
 export async function consumePasswordToken(
   token: string,
   newPassword: string,
-): Promise<ActionResult> {
+): Promise<ActionResult<{ userType: TokenUserType }>> {
   const v = await verifyPasswordToken(token);
   if (!v.ok) return fail(v.error);
 
@@ -91,5 +91,5 @@ export async function consumePasswordToken(
     await tx.verificationToken.update({ where: { token }, data: { usedAt: new Date() } });
   });
 
-  return ok();
+  return ok({ userType });
 }
