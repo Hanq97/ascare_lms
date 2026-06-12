@@ -32,8 +32,7 @@ export function StudentProgressClient({
   const [page, setPage] = useState(1);
 
   const list = rows.filter(
-    (s) =>
-      (corp === "all" || s.corpId === corp) && (s.name.includes(q) || s.nameKana.includes(q)),
+    (s) => (corp === "all" || s.corpId === corp) && (s.name.includes(q) || s.nameKana.includes(q)),
   );
   useEffect(() => setPage(1), [q, corp]);
   const pageList = list.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -44,7 +43,15 @@ export function StudentProgressClient({
         title="学生進捗一覧"
         sub="学生ごとの受講中コースと全体進捗。視聴率100%の動画を完了として集計しています。"
       />
-      <div style={{ display: "flex", gap: 12, marginBottom: 16, alignItems: "center", flexWrap: "wrap" }}>
+      <div
+        style={{
+          display: "flex",
+          gap: 12,
+          marginBottom: 16,
+          alignItems: "center",
+          flexWrap: "wrap",
+        }}
+      >
         <SearchBar value={q} onChange={setQ} placeholder="学生を検索" />
         <select
           value={corp}
@@ -126,14 +133,29 @@ export function StudentProgressClient({
                   <div style={{ flex: 1 }}>
                     <Bar pct={s.overall} h={8} />
                   </div>
-                  <span style={{ fontSize: 13.5, fontWeight: 800, color: T.primary, width: 40, textAlign: "right" }}>
+                  <span
+                    style={{
+                      fontSize: 13.5,
+                      fontWeight: 800,
+                      color: T.primary,
+                      width: 40,
+                      textAlign: "right",
+                    }}
+                  >
                     {s.overall}%
                   </span>
                 </div>
               </Td>
               <Td r>
                 <span style={{ color: T.primary, display: "inline-flex" }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
                     <path d="M9 18l6-6-6-6" />
                   </svg>
                 </span>

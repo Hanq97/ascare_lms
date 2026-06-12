@@ -120,8 +120,25 @@ export function CourseListClient({
 
       {/* ----- bộ lọc ----- */}
       {!isTeacher && (
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 13, flexWrap: "wrap" }}>
-          <div style={{ display: "flex", gap: 4, background: "#fff", border: `1px solid ${T.line}`, borderRadius: 10, padding: 4 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            marginBottom: 13,
+            flexWrap: "wrap",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              gap: 4,
+              background: "#fff",
+              border: `1px solid ${T.line}`,
+              borderRadius: 10,
+              padding: 4,
+            }}
+          >
             {(
               [
                 ["all", `すべて ${courses.length}`],
@@ -151,7 +168,9 @@ export function CourseListClient({
               </button>
             ))}
           </div>
-          <div style={{ marginLeft: "auto", fontSize: 13, color: T.muted2 }}>{list.length} コース</div>
+          <div style={{ marginLeft: "auto", fontSize: 13, color: T.muted2 }}>
+            {list.length} コース
+          </div>
         </div>
       )}
 
@@ -173,7 +192,9 @@ export function CourseListClient({
           <SearchBar
             value={q}
             onChange={setQ}
-            placeholder={isTeacher ? "コース名・コース内容で検索" : "コース名・コース内容・作成者名で検索"}
+            placeholder={
+              isTeacher ? "コース名・コース内容で検索" : "コース名・コース内容・作成者名で検索"
+            }
           />
         </div>
         {!isTeacher && (
@@ -251,14 +272,18 @@ export function CourseListClient({
           </button>
         )}
         {isTeacher && (
-          <div style={{ marginLeft: "auto", fontSize: 13, color: T.muted2 }}>{list.length} コース</div>
+          <div style={{ marginLeft: "auto", fontSize: 13, color: T.muted2 }}>
+            {list.length} コース
+          </div>
         )}
       </div>
 
       {/* ----- danh sách ----- */}
       {list.length === 0 ? (
         <Card style={{ padding: 48, textAlign: "center" }}>
-          <div style={{ color: T.muted3, marginBottom: 12, display: "flex", justifyContent: "center" }}>
+          <div
+            style={{ color: T.muted3, marginBottom: 12, display: "flex", justifyContent: "center" }}
+          >
             {icon(I.book, 34)}
           </div>
           <div style={{ fontSize: 15, fontWeight: 700, color: T.muted }}>
@@ -291,10 +316,20 @@ export function CourseListClient({
                 cursor: "pointer",
                 transition: "box-shadow .15s",
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.boxShadow = "0 6px 18px rgba(20,40,80,.09)")}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.boxShadow = "0 6px 18px rgba(20,40,80,.09)")
+              }
               onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "none")}
             >
-              <div style={{ width: 104, height: 62, borderRadius: 8, overflow: "hidden", flexShrink: 0 }}>
+              <div
+                style={{
+                  width: 104,
+                  height: 62,
+                  borderRadius: 8,
+                  overflow: "hidden",
+                  flexShrink: 0,
+                }}
+              >
                 <Banner src={c.thumbnailUrl} title={c.title} h={62} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
@@ -324,7 +359,14 @@ export function CourseListClient({
                   }}
                 >
                   {!isTeacher && (
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontWeight: 600 }}>
+                    <span
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 5,
+                        fontWeight: 600,
+                      }}
+                    >
                       {icon(I.user, 12)}
                       {c.creatorName}
                     </span>
@@ -363,7 +405,9 @@ export function CourseListClient({
                   {c.videoCount}本
                 </span>
                 <div style={{ width: 64, display: "flex", justifyContent: "flex-end" }}>
-                  <Badge tone={c.status === "PUBLISHED" ? "green" : "gray"}>{statusJp(c.status)}</Badge>
+                  <Badge tone={c.status === "PUBLISHED" ? "green" : "gray"}>
+                    {statusJp(c.status)}
+                  </Badge>
                 </div>
                 <button
                   onClick={() => setDel(c)}

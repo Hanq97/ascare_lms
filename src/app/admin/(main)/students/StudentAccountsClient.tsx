@@ -9,7 +9,16 @@ import {
   bulkDeleteStudentsAction,
 } from "@/server/actions/accounts";
 import { PageHead, Btn, StatusSelect, ConfirmDelete, useToast, T, I } from "@/components/ui";
-import { SearchBar, Table, Td, IconBtn, DeleteBtn, CountText, Pager, PAGE_SIZE } from "@/components/ui/admin-ui";
+import {
+  SearchBar,
+  Table,
+  Td,
+  IconBtn,
+  DeleteBtn,
+  CountText,
+  Pager,
+  PAGE_SIZE,
+} from "@/components/ui/admin-ui";
 
 type Row = {
   id: string;

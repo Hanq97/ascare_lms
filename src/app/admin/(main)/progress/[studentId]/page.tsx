@@ -44,7 +44,9 @@ export default async function StudentProgressDetailPage({
         {I.back}進捗一覧へ戻る
       </Link>
 
-      <div style={{ display: "grid", gridTemplateColumns: "320px 1fr", gap: 24, alignItems: "start" }}>
+      <div
+        style={{ display: "grid", gridTemplateColumns: "320px 1fr", gap: 24, alignItems: "start" }}
+      >
         {/* sidebar */}
         <Card style={{ textAlign: "center", position: "sticky", top: 24 }}>
           <div
@@ -89,7 +91,10 @@ export default async function StudentProgressDetailPage({
             <div style={{ flex: 1, background: T.bg, borderRadius: 9, padding: 11 }}>
               <div style={{ fontSize: 18, fontWeight: 900, color: T.green }}>
                 {summary.done}
-                <span style={{ fontSize: 13, color: T.muted3, fontWeight: 700 }}> / {totalCourses}</span>
+                <span style={{ fontSize: 13, color: T.muted3, fontWeight: 700 }}>
+                  {" "}
+                  / {totalCourses}
+                </span>
               </div>
               <div style={{ fontSize: 11, color: T.muted2 }}>修了コース</div>
             </div>
@@ -115,7 +120,9 @@ export default async function StudentProgressDetailPage({
           <h2 style={{ fontSize: 18, fontWeight: 800, margin: "0 0 14px" }}>コース別の進捗</h2>
           {totalCourses === 0 ? (
             <Card style={{ padding: "40px 24px", textAlign: "center" }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: T.muted }}>公開中のコースがありません</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: T.muted }}>
+                公開中のコースがありません
+              </div>
             </Card>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -155,7 +162,9 @@ export default async function StudentProgressDetailPage({
                               完了 {c.done} / {c.total} 本
                             </span>
                           </div>
-                          <div style={{ display: "flex", alignItems: "center", gap: 9, flexShrink: 0 }}>
+                          <div
+                            style={{ display: "flex", alignItems: "center", gap: 9, flexShrink: 0 }}
+                          >
                             {done && <Badge tone="green">{I.check}修了</Badge>}
                             <span
                               style={{

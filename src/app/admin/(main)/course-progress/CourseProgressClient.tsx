@@ -39,7 +39,8 @@ export type CourseProg = {
   learners: Learner[];
 };
 
-const catLabel = (c: Category) => (c === "DONE" ? "修了" : c === "IN_PROGRESS" ? "受講中" : "未着手");
+const catLabel = (c: Category) =>
+  c === "DONE" ? "修了" : c === "IN_PROGRESS" ? "受講中" : "未着手";
 const catTone = (c: Category) => (c === "DONE" ? "green" : c === "IN_PROGRESS" ? "blue" : "gray");
 
 const dateInp = {
@@ -120,7 +121,9 @@ export function CourseProgressClient({
           sub="コースを選ぶと、そのコースを学習している学生の進捗を一覧で管理できます。"
         />
         <Card style={{ padding: 48, textAlign: "center" }}>
-          <div style={{ color: T.muted3, marginBottom: 12, display: "flex", justifyContent: "center" }}>
+          <div
+            style={{ color: T.muted3, marginBottom: 12, display: "flex", justifyContent: "center" }}
+          >
             {icon(I.book, 34)}
           </div>
           <div style={{ fontSize: 15, fontWeight: 700, color: T.muted }}>
@@ -137,11 +140,20 @@ export function CourseProgressClient({
         title="コース別 学習進捗"
         sub="コースを選ぶと、そのコースを学習している学生の進捗を一覧で管理できます。"
       />
-      <div style={{ display: "grid", gridTemplateColumns: "288px 1fr", gap: 22, alignItems: "start" }}>
+      <div
+        style={{ display: "grid", gridTemplateColumns: "288px 1fr", gap: 22, alignItems: "start" }}
+      >
         {/* ---- course rail ---- */}
         <Card pad={false} style={{ position: "sticky", top: 24, overflow: "hidden" }}>
           <div style={{ padding: "14px 14px 12px", borderBottom: `1px solid ${T.lineSoft}` }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 11 }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: 11,
+              }}
+            >
               <span style={{ fontSize: 13, fontWeight: 800, color: T.muted }}>
                 {isTeacher ? "マイコース" : "コースを選択"}
               </span>
@@ -150,7 +162,16 @@ export function CourseProgressClient({
               </span>
             </div>
             <div style={{ position: "relative", marginBottom: isTeacher ? 0 : 9 }}>
-              <span style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", color: T.muted3, display: "flex" }}>
+              <span
+                style={{
+                  position: "absolute",
+                  left: 11,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  color: T.muted3,
+                  display: "flex",
+                }}
+              >
                 {I.search}
               </span>
               <input
@@ -171,7 +192,9 @@ export function CourseProgressClient({
               />
             </div>
             {!isTeacher && (
-              <div style={{ display: "flex", gap: 3, background: T.bg, borderRadius: 8, padding: 3 }}>
+              <div
+                style={{ display: "flex", gap: 3, background: T.bg, borderRadius: 8, padding: 3 }}
+              >
                 {(
                   [
                     ["all", "すべて", courses.length],
@@ -205,8 +228,23 @@ export function CourseProgressClient({
               </div>
             )}
             <div style={{ marginTop: 10 }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 5 }}>
-                <span style={{ fontSize: 10.5, fontWeight: 700, color: T.muted3, letterSpacing: 0.04, textTransform: "uppercase" }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: 5,
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: 10.5,
+                    fontWeight: 700,
+                    color: T.muted3,
+                    letterSpacing: 0.04,
+                    textTransform: "uppercase",
+                  }}
+                >
                   作成日で検索
                 </span>
                 {(dFrom || dTo) && (
@@ -215,22 +253,50 @@ export function CourseProgressClient({
                       setDFrom("");
                       setDTo("");
                     }}
-                    style={{ border: "none", background: "none", color: T.primary, fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: T.font, padding: 0 }}
+                    style={{
+                      border: "none",
+                      background: "none",
+                      color: T.primary,
+                      fontSize: 11,
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      fontFamily: T.font,
+                      padding: 0,
+                    }}
                   >
                     クリア
                   </button>
                 )}
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <input type="date" value={dFrom} max={dTo || undefined} onChange={(e) => setDFrom(e.target.value)} style={dateInp} />
+                <input
+                  type="date"
+                  value={dFrom}
+                  max={dTo || undefined}
+                  onChange={(e) => setDFrom(e.target.value)}
+                  style={dateInp}
+                />
                 <span style={{ color: T.muted3, fontSize: 12, flexShrink: 0 }}>〜</span>
-                <input type="date" value={dTo} min={dFrom || undefined} onChange={(e) => setDTo(e.target.value)} style={dateInp} />
+                <input
+                  type="date"
+                  value={dTo}
+                  min={dFrom || undefined}
+                  onChange={(e) => setDTo(e.target.value)}
+                  style={dateInp}
+                />
               </div>
             </div>
           </div>
           <div style={{ padding: 8, maxHeight: "calc(100vh - 312px)", overflow: "auto" }}>
             {railCourses.length === 0 ? (
-              <div style={{ padding: "26px 14px", textAlign: "center", fontSize: 12.5, color: T.muted3 }}>
+              <div
+                style={{
+                  padding: "26px 14px",
+                  textAlign: "center",
+                  fontSize: 12.5,
+                  color: T.muted3,
+                }}
+              >
                 該当するコースがありません
               </div>
             ) : (
@@ -261,7 +327,13 @@ export function CourseProgressClient({
                     <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 7 }}>
                       <span
                         title={c.creatorType === "ADMIN" ? "管理者作成" : "教師作成"}
-                        style={{ width: 7, height: 7, borderRadius: "50%", background: c.creatorType === "ADMIN" ? T.primary : T.amber, flexShrink: 0 }}
+                        style={{
+                          width: 7,
+                          height: 7,
+                          borderRadius: "50%",
+                          background: c.creatorType === "ADMIN" ? T.primary : T.amber,
+                          flexShrink: 0,
+                        }}
                       />
                       <span
                         style={{
@@ -276,16 +348,41 @@ export function CourseProgressClient({
                       >
                         {c.title}
                       </span>
-                      <span style={{ fontSize: 12, fontWeight: 800, color: a ? T.primary : T.muted2, flexShrink: 0 }}>
+                      <span
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 800,
+                          color: a ? T.primary : T.muted2,
+                          flexShrink: 0,
+                        }}
+                      >
                         {c.avgPercent}%
                       </span>
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 6 }}>
-                      <span style={{ fontSize: 10.5, color: T.muted3, display: "inline-flex", alignItems: "center", gap: 4 }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: 8,
+                        marginBottom: 6,
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontSize: 10.5,
+                          color: T.muted3,
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 4,
+                        }}
+                      >
                         {icon(I.cal, 11)}
                         {c.createdAt}
                       </span>
-                      {c.status === "DRAFT" && <span style={{ fontSize: 10.5, color: T.muted3 }}>非公開</span>}
+                      {c.status === "DRAFT" && (
+                        <span style={{ fontSize: 10.5, color: T.muted3 }}>非公開</span>
+                      )}
                     </div>
                     <Bar pct={c.avgPercent} h={6} color={a ? T.primary : T.muted3} />
                   </button>
@@ -304,13 +401,32 @@ export function CourseProgressClient({
                   <Banner src={course.thumbnailUrl} title={course.title} h={128} />
                 </div>
                 <div style={{ flex: 1, padding: "18px 22px" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 7, flexWrap: "wrap" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      marginBottom: 7,
+                      flexWrap: "wrap",
+                    }}
+                  >
                     <CreatorBadge creatorType={course.creatorType} />
                     {course.status === "DRAFT" && <Badge tone="gray">{I.lock}非公開</Badge>}
                     <span style={{ fontSize: 12, color: T.muted3 }}>{course.creatorName}</span>
                   </div>
-                  <div style={{ fontSize: 20, fontWeight: 900, marginBottom: 4 }}>{course.title}</div>
-                  <div style={{ fontSize: 12.5, color: T.muted2, display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                  <div style={{ fontSize: 20, fontWeight: 900, marginBottom: 4 }}>
+                    {course.title}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 12.5,
+                      color: T.muted2,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 12,
+                      flexWrap: "wrap",
+                    }}
+                  >
                     <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
                       {icon(I.video, 14)}動画 {course.videoCount}本
                     </span>
@@ -320,15 +436,29 @@ export function CourseProgressClient({
                   </div>
                 </div>
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", borderTop: `1px solid ${T.lineSoft}` }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(4,1fr)",
+                  borderTop: `1px solid ${T.lineSoft}`,
+                }}
+              >
                 {[
                   { v: `${course.avgPercent}%`, l: "平均進捗率", c: T.primary },
                   { v: course.started, l: "受講者（1本以上）", c: T.ink },
                   { v: course.completed, l: "修了者", c: T.green },
                   { v: course.notStarted, l: "未着手", c: T.amber },
                 ].map((k, i) => (
-                  <div key={i} style={{ padding: "15px 20px", borderLeft: i ? `1px solid ${T.lineSoft}` : "none" }}>
-                    <div style={{ fontSize: 24, fontWeight: 900, color: k.c, lineHeight: 1 }}>{k.v}</div>
+                  <div
+                    key={i}
+                    style={{
+                      padding: "15px 20px",
+                      borderLeft: i ? `1px solid ${T.lineSoft}` : "none",
+                    }}
+                  >
+                    <div style={{ fontSize: 24, fontWeight: 900, color: k.c, lineHeight: 1 }}>
+                      {k.v}
+                    </div>
                     <div style={{ fontSize: 11.5, color: T.muted2, marginTop: 5 }}>{k.l}</div>
                   </div>
                 ))}
@@ -337,7 +467,15 @@ export function CourseProgressClient({
           )}
 
           {/* filters */}
-          <div style={{ display: "flex", gap: 11, marginBottom: 14, alignItems: "center", flexWrap: "wrap" }}>
+          <div
+            style={{
+              display: "flex",
+              gap: 11,
+              marginBottom: 14,
+              alignItems: "center",
+              flexWrap: "wrap",
+            }}
+          >
             <SearchBar value={q} onChange={setQ} placeholder="学生を検索" />
             <select value={corp} onChange={(e) => setCorp(e.target.value)} style={selStyle}>
               <option value="all">すべての法人</option>
@@ -347,16 +485,29 @@ export function CourseProgressClient({
                 </option>
               ))}
             </select>
-            <select value={stat} onChange={(e) => setStat(e.target.value as typeof stat)} style={selStyle}>
+            <select
+              value={stat}
+              onChange={(e) => setStat(e.target.value as typeof stat)}
+              style={selStyle}
+            >
               <option value="all">すべての状態</option>
               <option value="DONE">修了</option>
               <option value="IN_PROGRESS">受講中</option>
               <option value="NOT_STARTED">未着手</option>
             </select>
-            <div style={{ marginLeft: "auto", fontSize: 13, color: T.muted2 }}>{rows.length} 名</div>
+            <div style={{ marginLeft: "auto", fontSize: 13, color: T.muted2 }}>
+              {rows.length} 名
+            </div>
           </div>
 
-          <div style={{ background: "#fff", border: `1px solid ${T.line}`, borderRadius: 14, overflow: "hidden" }}>
+          <div
+            style={{
+              background: "#fff",
+              border: `1px solid ${T.line}`,
+              borderRadius: 14,
+              overflow: "hidden",
+            }}
+          >
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr style={{ background: "#fafbfc", borderBottom: `1px solid ${T.line}` }}>
@@ -422,14 +573,17 @@ export function CourseProgressClient({
                           <Bar
                             pct={s.percent}
                             h={8}
-                            color={s.percent === 100 ? T.green : s.percent > 0 ? T.primary : T.track}
+                            color={
+                              s.percent === 100 ? T.green : s.percent > 0 ? T.primary : T.track
+                            }
                           />
                         </div>
                         <span
                           style={{
                             fontSize: 13,
                             fontWeight: 800,
-                            color: s.percent === 100 ? T.green : s.percent > 0 ? T.primary : T.muted3,
+                            color:
+                              s.percent === 100 ? T.green : s.percent > 0 ? T.primary : T.muted3,
                             width: 40,
                             textAlign: "right",
                           }}
@@ -458,7 +612,9 @@ export function CourseProgressClient({
               </tbody>
             </table>
             {rows.length === 0 && (
-              <div style={{ padding: "30px 18px", textAlign: "center", fontSize: 13, color: T.muted3 }}>
+              <div
+                style={{ padding: "30px 18px", textAlign: "center", fontSize: 13, color: T.muted3 }}
+              >
                 該当する学生がいません。
               </div>
             )}

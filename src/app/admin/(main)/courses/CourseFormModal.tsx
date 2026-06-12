@@ -172,7 +172,14 @@ export function CourseFormModal({
               cursor: uploading ? "wait" : "pointer",
             }}
           >
-            <div style={{ color: T.primary, display: "flex", justifyContent: "center", marginBottom: 8 }}>
+            <div
+              style={{
+                color: T.primary,
+                display: "flex",
+                justifyContent: "center",
+                marginBottom: 8,
+              }}
+            >
               {I.img}
             </div>
             <div style={{ fontSize: 13.5, color: T.muted }}>
@@ -185,7 +192,9 @@ export function CourseFormModal({
                 </>
               )}
             </div>
-            <div style={{ fontSize: 11.5, color: T.muted3, marginTop: 5 }}>PNG / JPG / WebP（最大8MB）</div>
+            <div style={{ fontSize: 11.5, color: T.muted3, marginTop: 5 }}>
+              PNG / JPG / WebP（最大8MB）
+            </div>
           </div>
         )}
         <input

@@ -30,7 +30,9 @@ export function VideoPreviewModal({
         </Btn>
       }
     >
-      <div style={{ borderRadius: 12, overflow: "hidden", background: "#000", aspectRatio: "16 / 9" }}>
+      <div
+        style={{ borderRadius: 12, overflow: "hidden", background: "#000", aspectRatio: "16 / 9" }}
+      >
         <video
           src={video.playUrl}
           controls
@@ -40,10 +42,16 @@ export function VideoPreviewModal({
         />
       </div>
       <div style={{ marginTop: 16 }}>
-        <div style={{ fontSize: 12.5, fontWeight: 700, color: T.muted2, marginBottom: 6 }}>レッスン名</div>
+        <div style={{ fontSize: 12.5, fontWeight: 700, color: T.muted2, marginBottom: 6 }}>
+          レッスン名
+        </div>
         <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>{video.title}</div>
-        <div style={{ fontSize: 12, color: T.muted3, marginBottom: 14 }}>再生時間 {fmtDur(video.durationSec)}</div>
-        <div style={{ fontSize: 12.5, fontWeight: 700, color: T.muted2, marginBottom: 6 }}>詳細内容</div>
+        <div style={{ fontSize: 12, color: T.muted3, marginBottom: 14 }}>
+          再生時間 {fmtDur(video.durationSec)}
+        </div>
+        <div style={{ fontSize: 12.5, fontWeight: 700, color: T.muted2, marginBottom: 6 }}>
+          詳細内容
+        </div>
         <div style={{ fontSize: 13.5, color: T.ink, lineHeight: 1.7 }}>
           {video.detail || "（詳細内容は未入力です）"}
         </div>

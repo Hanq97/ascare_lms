@@ -43,7 +43,9 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
         thumbnailUrl: course.thumbnailUrl,
         creatorType: course.creatorType,
         creatorName:
-          course.creatorType === "ADMIN" ? (course.admin?.name ?? "—") : (course.teacher?.name ?? "—"),
+          course.creatorType === "ADMIN"
+            ? (course.admin?.name ?? "—")
+            : (course.teacher?.name ?? "—"),
       }}
       videos={videos}
     />

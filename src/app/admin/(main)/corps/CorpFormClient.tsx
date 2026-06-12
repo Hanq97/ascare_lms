@@ -2,11 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import {
-  createCorpAction,
-  updateCorpAction,
-  setCorpStatusAction,
-} from "@/server/actions/accounts";
+import { createCorpAction, updateCorpAction, setCorpStatusAction } from "@/server/actions/accounts";
 import { Field, Input, Btn, I, inputStyle, T } from "@/components/ui";
 import { FormShell, MailInvite } from "@/components/ui/admin-ui";
 

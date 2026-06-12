@@ -60,7 +60,13 @@ export function Banner({
         src={src!}
         alt={title}
         onError={() => setErr(true)}
-        style={{ display: "block", width: "100%", height: h, objectFit: "cover", borderRadius: radius }}
+        style={{
+          display: "block",
+          width: "100%",
+          height: h,
+          objectFit: "cover",
+          borderRadius: radius,
+        }}
       />
     );
   }

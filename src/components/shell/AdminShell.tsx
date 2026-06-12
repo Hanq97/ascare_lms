@@ -230,9 +230,7 @@ export function AdminShell({
           </div>
           {isTeacher && <Badge tone="blue">{I.shield}講師ロール</Badge>}
         </header>
-        <main style={{ padding: "28px 32px 60px", flex: 1, width: "100%" }}>
-          {children}
-        </main>
+        <main style={{ padding: "28px 32px 60px", flex: 1, width: "100%" }}>{children}</main>
       </div>
     </div>
   );

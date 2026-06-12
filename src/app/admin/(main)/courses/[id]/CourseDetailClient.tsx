@@ -123,13 +123,17 @@ export function CourseDetailClient({
         {I.back}コース一覧へ戻る
       </Link>
 
-      <div style={{ display: "grid", gridTemplateColumns: "320px 1fr", gap: 24, alignItems: "start" }}>
+      <div
+        style={{ display: "grid", gridTemplateColumns: "320px 1fr", gap: 24, alignItems: "start" }}
+      >
         {/* ----- sidebar info ----- */}
         <Card pad={false} style={{ overflow: "hidden", position: "sticky", top: 24 }}>
           <Banner src={course.thumbnailUrl} title={course.title} h={150} />
           <div style={{ padding: "18px 20px" }}>
             <Badge tone={status === "PUBLISHED" ? "green" : "gray"}>{statusJp(status)}</Badge>
-            <div style={{ fontSize: 20, fontWeight: 900, margin: "11px 0 6px" }}>{course.title}</div>
+            <div style={{ fontSize: 20, fontWeight: 900, margin: "11px 0 6px" }}>
+              {course.title}
+            </div>
             <div style={{ fontSize: 12.5, color: T.muted2, lineHeight: 1.6, marginBottom: 16 }}>
               {course.description || "（コース内容は未入力です）"}
             </div>
@@ -153,15 +157,7 @@ export function CourseDetailClient({
                 variant={status === "PUBLISHED" ? "ghost" : "primary"}
                 onClick={() => setPubOpen(true)}
               >
-                {status === "PUBLISHED" ? (
-                  <>
-                    {I.lock}非公開にする
-                  </>
-                ) : (
-                  <>
-                    {I.check}公開する
-                  </>
-                )}
+                {status === "PUBLISHED" ? <>{I.lock}非公開にする</> : <>{I.check}公開する</>}
               </Btn>
               <Btn full variant="outline" size="sm" onClick={() => setEditOpen(true)}>
                 {I.edit}コース情報を編集
@@ -172,7 +168,14 @@ export function CourseDetailClient({
 
         {/* ----- video list ----- */}
         <div>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: 14,
+            }}
+          >
             <h2 style={{ fontSize: 18, fontWeight: 800, margin: 0 }}>
               動画一覧{" "}
               <span style={{ color: T.muted3, fontWeight: 600, fontSize: 14 }}>
@@ -186,10 +189,19 @@ export function CourseDetailClient({
 
           {videos.length === 0 ? (
             <Card style={{ padding: "40px 24px", textAlign: "center" }}>
-              <div style={{ color: T.muted3, marginBottom: 10, display: "flex", justifyContent: "center" }}>
+              <div
+                style={{
+                  color: T.muted3,
+                  marginBottom: 10,
+                  display: "flex",
+                  justifyContent: "center",
+                }}
+              >
                 {I.video}
               </div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: T.muted }}>動画はまだありません</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: T.muted }}>
+                動画はまだありません
+              </div>
               <div style={{ fontSize: 12.5, color: T.muted3, marginTop: 6 }}>
                 「レッスン追加」から最初の動画をアップロードしましょう。
               </div>
@@ -254,10 +266,24 @@ export function CourseDetailClient({
                   <div
                     style={{ flex: 1, minWidth: 0, cursor: "pointer" }}
                     onClick={() =>
-                      setPreview({ no: i + 1, title: v.title, detail: v.detail, durationSec: v.durationSec, playUrl: v.playUrl })
+                      setPreview({
+                        no: i + 1,
+                        title: v.title,
+                        detail: v.detail,
+                        durationSec: v.durationSec,
+                        playUrl: v.playUrl,
+                      })
                     }
                   >
-                    <div style={{ fontSize: 14, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <div
+                      style={{
+                        fontSize: 14,
+                        fontWeight: 700,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
                       {v.title}
                     </div>
                     <div
@@ -274,14 +300,29 @@ export function CourseDetailClient({
                       {v.detail || "（詳細内容は未入力です）"}
                     </div>
                   </div>
-                  <span style={{ fontSize: 12, color: T.muted3, display: "flex", alignItems: "center", gap: 5, flexShrink: 0 }}>
+                  <span
+                    style={{
+                      fontSize: 12,
+                      color: T.muted3,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 5,
+                      flexShrink: 0,
+                    }}
+                  >
                     {I.clock}
                     {fmtDur(v.durationSec)}
                   </span>
                   <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
                     <button
                       onClick={() =>
-                        setPreview({ no: i + 1, title: v.title, detail: v.detail, durationSec: v.durationSec, playUrl: v.playUrl })
+                        setPreview({
+                          no: i + 1,
+                          title: v.title,
+                          detail: v.detail,
+                          durationSec: v.durationSec,
+                          playUrl: v.playUrl,
+                        })
                       }
                       title="視聴"
                       style={{
@@ -339,7 +380,12 @@ export function CourseDetailClient({
       )}
       {editOpen && (
         <CourseFormModal
-          course={{ id: course.id, title: course.title, description: course.description, thumbnailUrl: course.thumbnailUrl ?? "" }}
+          course={{
+            id: course.id,
+            title: course.title,
+            description: course.description,
+            thumbnailUrl: course.thumbnailUrl ?? "",
+          }}
           onClose={() => setEditOpen(false)}
           onSaved={(msg) => {
             setEditOpen(false);
@@ -377,15 +423,7 @@ export function CourseDetailClient({
                 キャンセル
               </Btn>
               <Btn variant={toPublish ? "primary" : "danger"} onClick={togglePublish}>
-                {toPublish ? (
-                  <>
-                    {I.check}公開する
-                  </>
-                ) : (
-                  <>
-                    {I.lock}非公開にする
-                  </>
-                )}
+                {toPublish ? <>{I.check}公開する</> : <>{I.lock}非公開にする</>}
               </Btn>
             </>
           }

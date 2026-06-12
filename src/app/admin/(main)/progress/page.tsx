@@ -10,7 +10,10 @@ export default async function ProgressPage() {
   const user = await requireRole("ADMIN");
   const [res, corps] = await Promise.all([
     listStudentsProgress(user),
-    prisma.corporation.findMany({ orderBy: { createdAt: "asc" }, select: { id: true, name: true } }),
+    prisma.corporation.findMany({
+      orderBy: { createdAt: "asc" },
+      select: { id: true, name: true },
+    }),
   ]);
   const rows = res.ok ? res.data : [];
   return <StudentProgressClient rows={rows} corps={corps} />;

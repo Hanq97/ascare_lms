@@ -17,7 +17,16 @@ export function Skel({
   style?: CSSProperties;
 }) {
   return (
-    <div style={{ width: w, height: h, borderRadius: r, background: T.track, animation: anim, ...style }} />
+    <div
+      style={{
+        width: w,
+        height: h,
+        borderRadius: r,
+        background: T.track,
+        animation: anim,
+        ...style,
+      }}
+    />
   );
 }
 
@@ -55,7 +64,14 @@ function SkelToolbar() {
 /* bảng (card + dòng) */
 export function SkelTable({ cols = 4, rows = 8 }: { cols?: number; rows?: number }) {
   return (
-    <div style={{ background: "#fff", border: `1px solid ${T.line}`, borderRadius: 14, overflow: "hidden" }}>
+    <div
+      style={{
+        background: "#fff",
+        border: `1px solid ${T.line}`,
+        borderRadius: 14,
+        overflow: "hidden",
+      }}
+    >
       <div
         style={{
           display: "flex",
@@ -167,7 +183,12 @@ export function DashboardSkeleton({ kpis = 5 }: { kpis?: number }) {
         {Array.from({ length: kpis }).map((_, i) => (
           <div
             key={i}
-            style={{ background: "#fff", border: `1px solid ${T.line}`, borderRadius: 14, padding: "18px 20px" }}
+            style={{
+              background: "#fff",
+              border: `1px solid ${T.line}`,
+              borderRadius: 14,
+              padding: "18px 20px",
+            }}
           >
             <Skel w={42} h={42} r={11} />
             <Skel w={50} h={28} style={{ marginTop: 14 }} />
@@ -175,7 +196,17 @@ export function DashboardSkeleton({ kpis = 5 }: { kpis?: number }) {
           </div>
         ))}
       </div>
-      <div style={{ background: "#fff", border: `1px solid ${T.line}`, borderRadius: 14, padding: "26px 28px", display: "flex", gap: 30, alignItems: "center" }}>
+      <div
+        style={{
+          background: "#fff",
+          border: `1px solid ${T.line}`,
+          borderRadius: 14,
+          padding: "26px 28px",
+          display: "flex",
+          gap: 30,
+          alignItems: "center",
+        }}
+      >
         <Skel w={150} h={150} r={75} />
         <div style={{ flex: 1 }}>
           <Skel w={200} h={16} />
@@ -192,8 +223,17 @@ export function CourseProgressSkeleton() {
   return (
     <div>
       <SkelHead action={false} />
-      <div style={{ display: "grid", gridTemplateColumns: "288px 1fr", gap: 22, alignItems: "start" }}>
-        <div style={{ background: "#fff", border: `1px solid ${T.line}`, borderRadius: 14, padding: 14 }}>
+      <div
+        style={{ display: "grid", gridTemplateColumns: "288px 1fr", gap: 22, alignItems: "start" }}
+      >
+        <div
+          style={{
+            background: "#fff",
+            border: `1px solid ${T.line}`,
+            borderRadius: 14,
+            padding: 14,
+          }}
+        >
           <Skel h={38} r={9} />
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} style={{ marginTop: 12 }}>

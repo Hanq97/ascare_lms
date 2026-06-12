@@ -181,14 +181,27 @@ export function VideoUploadModal({
                   setFile(null);
                   setDurationSec(0);
                 }}
-                style={{ border: "none", background: "none", color: T.muted3, cursor: "pointer", display: "flex" }}
+                style={{
+                  border: "none",
+                  background: "none",
+                  color: T.muted3,
+                  cursor: "pointer",
+                  display: "flex",
+                }}
               >
                 {I.trash}
               </button>
             </div>
           ) : (
             <>
-              <div style={{ color: T.primary, display: "flex", justifyContent: "center", marginBottom: 9 }}>
+              <div
+                style={{
+                  color: T.primary,
+                  display: "flex",
+                  justifyContent: "center",
+                  marginBottom: 9,
+                }}
+              >
                 {I.upload}
               </div>
               <div style={{ fontSize: 14, color: T.muted }}>
@@ -211,9 +224,7 @@ export function VideoUploadModal({
             }}
           />
         </div>
-        {verr && (
-          <div style={{ fontSize: 12.5, color: T.accent, marginTop: 9 }}>{verr}</div>
-        )}
+        {verr && <div style={{ fontSize: 12.5, color: T.accent, marginTop: 9 }}>{verr}</div>}
       </Field>
     </Modal>
   );

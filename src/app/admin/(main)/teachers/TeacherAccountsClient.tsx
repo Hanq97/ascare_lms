@@ -4,7 +4,16 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { setTeacherStatusAction, deleteTeacherAction } from "@/server/actions/accounts";
 import { PageHead, Btn, Badge, StatusSelect, ConfirmDelete, useToast, T, I } from "@/components/ui";
-import { SearchBar, Table, Td, IconBtn, DeleteBtn, CountText, Pager, PAGE_SIZE } from "@/components/ui/admin-ui";
+import {
+  SearchBar,
+  Table,
+  Td,
+  IconBtn,
+  DeleteBtn,
+  CountText,
+  Pager,
+  PAGE_SIZE,
+} from "@/components/ui/admin-ui";
 
 type Row = {
   id: string;
