@@ -6,9 +6,6 @@ import { I, Badge, icon } from "@/components/ui";
 
 export type CourseStatusJp = "PUBLISHED" | "DRAFT";
 
-/** URL phát video qua route có auth (Video.url lưu KEY). */
-export const mediaSrc = (key: string) => `/api/media/${encodeURIComponent(key)}`;
-
 /** mm:ss từ tổng giây. */
 export function fmtDur(sec: number): string {
   const s = Math.max(0, Math.floor(sec));

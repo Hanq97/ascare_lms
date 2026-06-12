@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/auth/rbac";
 import { prisma } from "@/lib/prisma";
 import { getStudentProgressSummary } from "@/server/services/progress";
-import { Card, Ring, Bar, Badge, T, I, icon } from "@/components/ui";
+import { Card, Ring, Bar, Badge, T, I } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -137,7 +137,7 @@ export default async function StudentProgressDetailPage({
                           flexShrink: 0,
                         }}
                       >
-                        {icon(I.book, 20)}
+                        {I.book}
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div

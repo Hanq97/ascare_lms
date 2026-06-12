@@ -3,8 +3,10 @@ import { notFound, redirect } from "next/navigation";
 import { requireRole } from "@/lib/auth/rbac";
 import { prisma } from "@/lib/prisma";
 import { canManageCourse } from "@/server/services/course-service";
-import { mediaSrc } from "../CourseBits";
 import { CourseDetailClient, type DetailVideo } from "./CourseDetailClient";
+
+// URL phát video (Video.url lưu KEY). Build tại server — không import hàm từ module "use client".
+const mediaSrc = (key: string) => `/api/media/${encodeURIComponent(key)}`;
 
 export const dynamic = "force-dynamic";
 
