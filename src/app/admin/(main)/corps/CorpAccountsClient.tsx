@@ -33,11 +33,12 @@ export function CorpAccountsClient({ corps }: { corps: Row[] }) {
   const [page, setPage] = useState(1);
   const [toastNode, toast] = useToast();
 
+  const ql = q.trim().toLowerCase();
   const rows = corps.filter(
     (c) =>
-      c.name.includes(q) ||
-      c.email.toLowerCase().includes(q.toLowerCase()) ||
-      c.personName.includes(q),
+      c.name.toLowerCase().includes(ql) ||
+      c.email.toLowerCase().includes(ql) ||
+      c.personName.toLowerCase().includes(ql),
   );
   useEffect(() => setPage(1), [q]);
   const pageRows = rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);

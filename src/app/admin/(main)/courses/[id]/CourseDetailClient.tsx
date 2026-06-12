@@ -1,7 +1,7 @@
 "use client";
 
 // SC-A09 — chi tiết コース: thông tin + 公開設定 + 動画一覧 (kéo-thả sắp xếp) + upload/preview/xoá lesson.
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -20,6 +20,7 @@ export type DetailVideo = {
   title: string;
   detail: string;
   durationSec: number;
+  url: string; // KEY gốc — gửi lại khi sửa lesson mà không thay video
   playUrl: string;
 };
 
@@ -43,8 +44,14 @@ export function CourseDetailClient({
   const router = useRouter();
   const [toastNode, toast] = useToast();
   const [videos, setVideos] = useState(initial);
+  // Đồng bộ lại khi server trả danh sách mới (sau router.refresh() lúc upload/sửa) —
+  // useState chỉ nhận initial ở lần mount đầu, nên cần effect để phản ánh prop mới.
+  useEffect(() => {
+    setVideos(initial);
+  }, [initial]);
   const [status, setStatus] = useState<CourseStatusJp>(course.status);
   const [uploadOpen, setUploadOpen] = useState(false);
+  const [editLesson, setEditLesson] = useState<DetailVideo | null>(null);
   const [editOpen, setEditOpen] = useState(false);
   const [preview, setPreview] = useState<PreviewVideo | null>(null);
   const [delLesson, setDelLesson] = useState<{ no: number; v: DetailVideo } | null>(null);
@@ -55,7 +62,10 @@ export function CourseDetailClient({
   const [overI, setOverI] = useState<number | null>(null);
   const [handleI, setHandleI] = useState<number | null>(null);
 
-  const totalMin = Math.round(videos.reduce((a, v) => a + v.durationSec, 0) / 60);
+  // 合計時間: làm tròn LÊN phút (tránh 1分13秒 bị làm tròn xuống thành "1分"); ≥60 phút thì tách 時間.
+  const totalMin = Math.ceil(videos.reduce((a, v) => a + v.durationSec, 0) / 60);
+  const totalH = Math.floor(totalMin / 60);
+  const totalM = totalMin % 60;
 
   const onDrop = async (i: number) => {
     if (dragI === null || dragI === i) {
@@ -144,8 +154,18 @@ export function CourseDetailClient({
               </div>
               <div style={{ flex: 1, background: T.bg, borderRadius: 9, padding: "10px 12px" }}>
                 <div style={{ fontSize: 19, fontWeight: 900 }}>
-                  {totalMin}
-                  <span style={{ fontSize: 12 }}>分</span>
+                  {totalH > 0 && (
+                    <>
+                      {totalH}
+                      <span style={{ fontSize: 12 }}>時間</span>
+                    </>
+                  )}
+                  {(totalM > 0 || totalH === 0) && (
+                    <>
+                      {totalM}
+                      <span style={{ fontSize: 12 }}>分</span>
+                    </>
+                  )}
                 </div>
                 <div style={{ fontSize: 11, color: T.muted2 }}>合計時間</div>
               </div>
@@ -341,6 +361,24 @@ export function CourseDetailClient({
                       {I.eye}
                     </button>
                     <button
+                      onClick={() => setEditLesson(v)}
+                      title="編集"
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: 8,
+                        border: `1px solid ${T.line}`,
+                        background: T.bg,
+                        color: T.muted,
+                        cursor: "pointer",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      {I.edit}
+                    </button>
+                    <button
                       onClick={() => setDelLesson({ no: i + 1, v })}
                       title="削除"
                       style={{
@@ -373,6 +411,25 @@ export function CourseDetailClient({
           onClose={() => setUploadOpen(false)}
           onDone={(msg) => {
             setUploadOpen(false);
+            toast(msg);
+            router.refresh();
+          }}
+        />
+      )}
+      {editLesson && (
+        <VideoUploadModal
+          courseId={course.id}
+          editVideo={{
+            id: editLesson.id,
+            title: editLesson.title,
+            detail: editLesson.detail,
+            url: editLesson.url,
+            durationSec: editLesson.durationSec,
+            playUrl: editLesson.playUrl,
+          }}
+          onClose={() => setEditLesson(null)}
+          onDone={(msg) => {
+            setEditLesson(null);
             toast(msg);
             router.refresh();
           }}

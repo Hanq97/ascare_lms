@@ -1,29 +1,43 @@
 "use client";
 
 // SC-A10 — アップロード: chọn file video → đọc 長さ (client) → upload local → addVideo.
+// Kiêm cả chế độ SỬA lesson (editVideo): prefill tên/chi tiết, thay video là tùy chọn → updateVideo.
 import { useRef, useState } from "react";
 import { uploadVideoAction } from "@/server/actions/media";
-import { addVideoAction } from "@/server/actions/content";
+import { addVideoAction, updateVideoAction } from "@/server/actions/content";
 import { Modal, Btn, Field, Input, inputStyle, T, I } from "@/components/ui";
 import { fmtDur } from "../CourseBits";
 
+export type EditVideo = {
+  id: string;
+  title: string;
+  detail: string;
+  url: string; // KEY video hiện tại
+  durationSec: number;
+  playUrl: string; // URL phát (/api/media/...) để xem video hiện tại
+};
+
 export function VideoUploadModal({
   courseId,
+  editVideo,
   onClose,
   onDone,
 }: {
   courseId: string;
+  editVideo?: EditVideo;
   onClose: () => void;
   onDone: (msg: string) => void;
 }) {
+  const isEdit = !!editVideo;
   const [file, setFile] = useState<File | null>(null);
   const [durationSec, setDurationSec] = useState(0);
-  const [name, setName] = useState("");
-  const [detail, setDetail] = useState("");
+  const [name, setName] = useState(editVideo?.title ?? "");
+  const [detail, setDetail] = useState(editVideo?.detail ?? "");
   const [drag, setDrag] = useState(false);
   const [verr, setVerr] = useState("");
   const [error, setError] = useState<string>();
   const [busy, setBusy] = useState(false);
+  const [showCur, setShowCur] = useState(false); // toggle xem video hiện tại (chế độ sửa)
   const ref = useRef<HTMLInputElement>(null);
 
   const pick = (f: File) => {
@@ -46,45 +60,57 @@ export function VideoUploadModal({
   };
 
   const submit = async () => {
-    if (!file || !name.trim()) return;
+    if (!name.trim()) return;
+    if (!isEdit && !file) return; // thêm mới: bắt buộc có video
     setError(undefined);
-    if (!durationSec) {
-      setError("動画の長さを取得できませんでした。別のファイルでお試しください。");
-      return;
+
+    // mặc định giữ video hiện tại (chế độ sửa); nếu chọn file mới thì upload thay thế.
+    let url = editVideo?.url ?? "";
+    let dur = editVideo?.durationSec ?? 0;
+    if (file) {
+      if (!durationSec) {
+        setError("動画の長さを取得できませんでした。別のファイルでお試しください。");
+        return;
+      }
+      setBusy(true);
+      const fd = new FormData();
+      fd.append("file", file);
+      const up = await uploadVideoAction(fd);
+      if (!up.ok) {
+        setBusy(false);
+        setError(up.error);
+        return;
+      }
+      url = up.data.key;
+      dur = durationSec;
     }
+
     setBusy(true);
-    const fd = new FormData();
-    fd.append("file", file);
-    const up = await uploadVideoAction(fd);
-    if (!up.ok) {
-      setBusy(false);
-      setError(up.error);
-      return;
-    }
-    const res = await addVideoAction(courseId, {
-      title: name.trim(),
-      detail: detail.trim(),
-      url: up.data.key,
-      durationSec,
-    });
+    const payload = { title: name.trim(), detail: detail.trim(), url, durationSec: dur };
+    const res = isEdit
+      ? await updateVideoAction(editVideo!.id, payload)
+      : await addVideoAction(courseId, payload);
     setBusy(false);
-    if (res.ok) onDone(`「${name.trim()}」をアップロードしました`);
+    if (res.ok)
+      onDone(
+        isEdit ? `「${name.trim()}」を保存しました` : `「${name.trim()}」をアップロードしました`,
+      );
     else setError(res.error);
   };
 
   return (
     <Modal
       wide
-      title="レッスンを追加"
+      title={isEdit ? "レッスンを編集" : "レッスンを追加"}
       onClose={() => (busy ? undefined : onClose())}
       footer={
         <>
           <Btn variant="ghost" onClick={onClose} disabled={busy}>
             キャンセル
           </Btn>
-          <Btn onClick={submit} disabled={busy || !file || !name.trim()}>
-            {I.upload}
-            {busy ? "アップロード中…" : "アップロード"}
+          <Btn onClick={submit} disabled={busy || !name.trim() || (!isEdit && !file)}>
+            {isEdit ? I.check : I.upload}
+            {isEdit ? (busy ? "保存中…" : "保存") : busy ? "アップロード中…" : "アップロード"}
           </Btn>
         </>
       }
@@ -118,7 +144,70 @@ export function VideoUploadModal({
           style={{ ...inputStyle(false), height: 84, padding: "10px 13px", resize: "vertical" }}
         />
       </Field>
-      <Field label="動画ファイル" required>
+      {isEdit && editVideo && (
+        <Field label="現在の動画">
+          <div
+            style={{
+              border: `1px solid ${T.line}`,
+              borderRadius: 12,
+              padding: "12px 14px",
+              background: T.bg,
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div
+                style={{
+                  width: 56,
+                  height: 34,
+                  borderRadius: 6,
+                  background: T.primarySoft,
+                  color: T.primary,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
+              >
+                {I.video}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div
+                  style={{
+                    fontSize: 13.5,
+                    fontWeight: 600,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {editVideo.title}
+                </div>
+                <div style={{ fontSize: 11.5, color: T.muted3 }}>
+                  {fmtDur(editVideo.durationSec)}
+                </div>
+              </div>
+              <Btn variant="outline" size="sm" onClick={() => setShowCur((s) => !s)}>
+                {I.eye}
+                {showCur ? "閉じる" : "視聴"}
+              </Btn>
+            </div>
+            {showCur && (
+              <video
+                src={editVideo.playUrl}
+                controls
+                style={{
+                  width: "100%",
+                  marginTop: 12,
+                  borderRadius: 8,
+                  background: "#000",
+                  maxHeight: 280,
+                }}
+              />
+            )}
+          </div>
+        </Field>
+      )}
+      <Field label={isEdit ? "動画ファイルを差し替え" : "動画ファイル"} required={!isEdit}>
         <div
           onClick={() => !busy && ref.current?.click()}
           onDragOver={(e) => {

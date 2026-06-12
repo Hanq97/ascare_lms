@@ -100,12 +100,13 @@ export function CourseProgressClient({
 
   const course = courses.find((c) => c.id === cid) ?? courses[0] ?? null;
 
+  const ql = q.trim().toLowerCase();
   const rows = course
     ? course.learners
         .filter(
           (s) =>
             (corp === "all" || s.corpId === corp) &&
-            (s.name.includes(q) || s.nameKana.includes(q)) &&
+            (s.name.toLowerCase().includes(ql) || s.nameKana.toLowerCase().includes(ql)) &&
             (stat === "all" || s.category === stat),
         )
         .sort((a, b) => b.percent - a.percent)

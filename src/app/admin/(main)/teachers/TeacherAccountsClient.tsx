@@ -31,11 +31,12 @@ export function TeacherAccountsClient({ teachers }: { teachers: Row[] }) {
   const [page, setPage] = useState(1);
   const [toastNode, toast] = useToast();
 
+  const ql = q.trim().toLowerCase();
   const rows = teachers.filter(
     (t) =>
-      t.name.includes(q) ||
-      t.email.toLowerCase().includes(q.toLowerCase()) ||
-      (t.org ?? "").includes(q),
+      t.name.toLowerCase().includes(ql) ||
+      t.email.toLowerCase().includes(ql) ||
+      (t.org ?? "").toLowerCase().includes(ql),
   );
   useEffect(() => setPage(1), [q]);
   const pageRows = rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);

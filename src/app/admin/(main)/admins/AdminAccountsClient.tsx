@@ -24,8 +24,9 @@ export function AdminAccountsClient({ admins, meId }: { admins: Row[]; meId: str
   const [page, setPage] = useState(1);
   const [toastNode, toast] = useToast();
 
+  const ql = q.trim().toLowerCase();
   const rows = admins.filter(
-    (a) => a.name.includes(q) || a.email.toLowerCase().includes(q.toLowerCase()),
+    (a) => a.name.toLowerCase().includes(ql) || a.email.toLowerCase().includes(ql),
   );
   useEffect(() => setPage(1), [q]);
   const pageRows = rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);

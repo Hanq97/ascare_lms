@@ -72,12 +72,13 @@ export function CourseListClient({
     return [...m.entries()];
   }, [courses, creator]);
 
+  const ql = q.trim().toLowerCase();
   const list = courses.filter((c) => {
     const okQ =
-      !q ||
-      c.title.includes(q) ||
-      c.description.includes(q) ||
-      (!isTeacher && c.creatorName.includes(q));
+      !ql ||
+      c.title.toLowerCase().includes(ql) ||
+      c.description.toLowerCase().includes(ql) ||
+      (!isTeacher && c.creatorName.toLowerCase().includes(ql));
     const okC = isTeacher || creator === "all" || c.creatorType === creator;
     const okPerson = isTeacher || creatorId === "all" || c.creatorKey === creatorId;
     const okStatus = statusF === "all" || c.status === statusF;
