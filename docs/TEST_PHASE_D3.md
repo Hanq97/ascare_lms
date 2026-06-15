@@ -18,7 +18,7 @@
 | # | Thao tác | Mong đợi |
 |---|---|---|
 | A1 | Vào `/admin/progress` | Bảng 学生: avatar + tên + 国籍, 所属法人, **修了コース数 (done / total)**, **全体進捗 bar + %**, đếm "N 名" |
-| A2 | Ô search gõ tên 学生 | Lọc đúng |
+| A2 | Ô search gõ tên 学生 (kana hoặc tên) | Lọc đúng; **không phân biệt hoa-thường** |
 | A3 | Dropdown **すべての法人 → 1 法人** | Chỉ còn 学生 thuộc 法人 đó |
 | A4 | Quan sát cột 修了コース数 | Số 修了 màu xanh nếu > 0; mẫu số = tổng khóa 公開 |
 | A5 | Click 1 dòng | Điều hướng sang **chi tiết** `/admin/progress/<id>` |
@@ -26,7 +26,7 @@
 ## B. 学生進捗 — chi tiết (SC-A11)
 | # | Thao tác | Mong đợi |
 |---|---|---|
-| B1 | Trang chi tiết | Sidebar: avatar, tên, カナ, badge 国籍 + 有効/無効, **Ring 全体進捗**, ô 修了コース (done/total) + 所属法人 |
+| B1 | Trang chi tiết | Sidebar: avatar, tên, カナ, badge 国籍 + 有効/無効, **Ring 全体進捗**, 2 ô: 修了コース (done/total) + **所属** (chữ「所属」to + tên法人 nhỏ phía dưới) |
 | B2 | Khu **コース別の進捗** | Mỗi khóa 公開 1 thẻ: tên + 完了 done/total 本 + bar + %; khóa 100% có **badge 修了** xanh |
 | B3 | Bấm **進捗一覧へ戻る** | Quay lại list |
 | B4 | (tuỳ chọn) login 学生 này xem hết 1 video → quay lại B1 | %/修了 cập nhật tương ứng |
@@ -35,16 +35,16 @@
 | # | Thao tác | Mong đợi |
 |---|---|---|
 | C1 | Vào `/admin/course-progress` | Layout 2 cột: **rail コース** trái + **panel** phải; khóa đầu được chọn sẵn |
-| C2 | Rail: ô **コース名で検索** | Lọc danh sách khóa bên rail |
+| C2 | Rail: ô **コース名で検索** | Lọc danh sách khóa bên rail; **không phân biệt hoa-thường** (gõ "laravel" vẫn ra "Laravel") |
 | C3 | Rail: tab **すべて / 管理者 / 教師** | Lọc khóa theo người tạo; số đếm khớp |
 | C4 | Rail: **作成日で検索** (from–to) + クリア | Lọc/ở lại theo ngày tạo |
 | C5 | Mỗi item rail | Hiện chấm màu (xanh=管理者/cam=教師) + tên + **avg %** + 作成日 + bar; 非公開 có nhãn |
 | C6 | Bấm 1 khóa ở rail | Panel phải đổi sang khóa đó (reset filter học viên) |
-| C7 | Panel header | Banner + creator badge + (非公開 badge nếu DRAFT) + tên + số 動画 + 作成日 |
+| C7 | Panel header | Banner + creator badge + (非公開 badge nếu DRAFT) + tên + số 動画 + 作成日; **ảnh thumbnail hiện TRỌN (object-fit contain)** — logo có chữ không bị cắt |
 | C8 | 4 ô thống kê | **平均進捗率 / 受講者(1本以上) / 修了者 / 未着手** đúng số |
 | C9 | Bảng 受講者: cột | 学生 / 所属法人 / このコースの進捗 (bar+%) / 完了本数 / 状態 (修了·受講中·未着手) / 最終視聴 |
 | C10 | Sắp xếp | Danh sách học viên **sắp theo % giảm dần** |
-| C11 | Filter: search 学生 + dropdown 法人 + dropdown **状態** | Lọc đúng tổ hợp |
+| C11 | Filter: search 学生 (không phân biệt hoa-thường) + dropdown 法人 + dropdown **状態** | Lọc đúng tổ hợp |
 | C12 | Cột 最終視聴 | Có thời điểm xem gần nhất; chưa xem → "—" |
 
 ## D. RBAC — 教師

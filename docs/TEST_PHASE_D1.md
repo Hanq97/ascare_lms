@@ -22,6 +22,8 @@
 | B1 | Mở `/admin` | 5 KPI: 法人 / 教師 / 学生 / コース / 動画 (kèm "有効 N" / "公開 N") |
 | B2 | Bấm 1 KPI (vd 学生アカウント) | Điều hướng tới list tương ứng (`/admin/students`) |
 | B3 | Quan sát card 平均進捗 | Ring hiện % + 2 ô "進捗80%以上" / "進捗40%未満" |
+| B4 | **Quan sát icon mỗi KPI** | Mỗi thẻ có **icon + nền màu** (xanh/lục/hồng/cam) — KHÔNG được trắng/xám/mất icon |
+| B5 | Rê chuột lên thẻ KPI | Có hiệu ứng **đổ bóng (hover)** |
 
 ## C. 管理者管理 (SC-A04)
 | # | Thao tác | Mong đợi |
@@ -29,8 +31,8 @@
 | C1 | `/admin/admins` | Bảng admin, có cột 氏名/メール/ステータス/操作; ô search; đếm "N 名" |
 | C2 | Search "山田" | Lọc đúng theo 氏名/email |
 | C3 | 管理者アカウント発行 → nhập 氏名 + email mới → 発行 | Quay về list, có admin mới; **Mailpit có mail invite** (パスワード設定) |
-| C4 | Tạo trùng email đã tồn tại | Báo lỗi đỏ "既に使用されています" |
-| C5 | Tạo bỏ trống 氏名 hoặc email | Báo lỗi validation |
+| C4 | Tạo trùng email đã tồn tại | Báo lỗi đỏ "既に登録されています" |
+| C5 | Tạo bỏ trống 氏名 hoặc email | Báo lỗi "{項目}を入力してください。" |
 | C6 | Edit 1 admin | Email **khoá (変更不可)**; sửa 氏名 → lưu OK |
 | C7 | Đổi ステータス (pulldown 有効↔無効) | Toast + đổi màu; refresh giữ trạng thái |
 | C8 | Xoá **chính mình** (山田) | **Bị chặn**: "自分自身のアカウントは削除できません" |
@@ -84,7 +86,7 @@
 ## I. RBAC / Teacher
 | # | Thao tác | Mong đợi |
 |---|---|---|
-| I1 | Logout → đăng nhập **teacher** k.sato | Vào `/admin`, dashboard **own-scope** (担当コース/動画/受講者) |
+| I1 | Logout → đăng nhập **teacher** k.sato | Vào `/admin`, dashboard **own-scope**: sub-title "{所属} ・ {tên} 先生…", **4 thẻ** (担当コース / 公開中のコース / 受講者（実視聴）/ 平均進捗率), cột phải có **danh sách tiến độ từng khóa** (thanh bar) + nút「マイコースへ」; icon các thẻ có màu |
 | I2 | Sidebar teacher | CHỈ ダッシュボード/コース管理/コース別進捗 (không có account管理) |
 | I3 | Teacher gõ URL `/admin/admins` (hoặc /corps, /students, /teachers) | Bị đẩy về `/admin` (chỉ ADMIN) |
 | I4 | Teacher mở `/admin/profile` | Hiện thông tin teacher + **所属教育機関** (read-only ở D1) |
@@ -95,6 +97,41 @@
 | J1 | Modal confirm (xoá/reset) | Canh giữa, nền mờ phủ cả breadcrumb (Portal) |
 | J2 | Form 2 cột, nút キャンセル/保存 | Khớp design; キャンセル quay lại list |
 | J3 | Toast | Hiện ~2.4s rồi tắt |
+| J4 | **Search (admin/教師/法人/学生/コース)** gõ chữ **thường** dù tên viết hoa (vd "yamada", "laravel") | **Vẫn ra kết quả** (không phân biệt hoa-thường); khoảng trắng thừa cũng bỏ qua |
+
+## K. Validation nhập liệu (入力バリデーション規定 — rule mới)
+> Áp dụng cho mọi form tài khoản (管理者/教師/法人/学生). Validate cả lúc gõ (frontend) lẫn khi 保存 (backend). Thông báo lỗi bằng tiếng Nhật.
+
+### K.1 Bắt buộc (●) & độ dài
+| # | Thao tác | Mong đợi |
+|---|---|---|
+| K1 | Bỏ trống 氏名 / 法人名 / コース名… rồi 保存 | Lỗi "{項目}を入力してください。" |
+| K2 | Bỏ trống dropdown 国籍 (học sinh) | Lỗi "国籍を**選択**してください。" |
+| K3 | 氏名/法人名/担当者名/カナ/所属教育機関 | Gõ tới **100 ký tự là dừng** (không nhập thêm được) |
+| K4 | 住所 | Tối đa **120**; email tối đa **254** |
+
+### K.2 Ký tự cho phép
+| # | Thao tác | Mong đợi |
+|---|---|---|
+| K5 | 氏名（カナ） / 法人名（カナ） nhập chữ La-tinh (vd "Tanaka") → 保存 | Lỗi "…はカタカナ・ひらがなで入力してください。" |
+| K6 | 学生 氏名（ローマ字） nhập katakana (vd "グエン") → 保存 | Lỗi "…は半角英字で入力してください。" |
+| K7 | メールアドレス nhập sai định dạng (vd "abc@") → 保存 | Lỗi "メールアドレスの形式が正しくありません。" |
+
+### K.3 法人: 電話 / 郵便番号 (chỉ số)
+| # | Thao tác | Mong đợi |
+|---|---|---|
+| K8 | Ô 電話番号 / 郵便番号 gõ chữ cái hoặc dấu gạch | **Bị chặn ngay** (chỉ nhận số); 電話 tối đa 11, 郵便 tối đa 7 |
+| K9 | Sửa 法人 seed (corp1, phone/postal có gạch) → 保存 | Lưu OK (tự bỏ gạch); KHÔNG báo lỗi |
+| K10 | 電話 nhập 9 số rồi 保存 | Lỗi "電話番号は半角数字のみ、10〜11桁…" |
+
+### K.4 Mật khẩu (màn set-password từ link mail)
+| # | Thao tác | Mong đợi |
+|---|---|---|
+| K11 | Mở link invite/reset → màn パスワード設定 | Có **2 ô**: mật khẩu + xác nhận |
+| K12 | Nhập mật khẩu < 8 ký tự | Lỗi "8文字以上…" |
+| K13 | Nhập toàn chữ (không có số) vd "abcdefgh" | Lỗi "英字と数字を含めてください。" |
+| K14 | 2 ô không khớp nhau | Lỗi "新しいパスワード（確認）が一致しません。" |
+| K15 | Nhập hợp lệ (vd "Care2026", khớp) | Đặt OK → "ログインへ" |
 
 ---
 **Ghi chú:**
