@@ -37,11 +37,13 @@ export function PasswordField({
   name = "password",
   autoComplete = "current-password",
   minLength,
+  maxLength,
 }: {
   label: string;
   name?: string;
   autoComplete?: string;
   minLength?: number;
+  maxLength?: number;
 }) {
   const [show, setShow] = useState(false);
   return (
@@ -54,6 +56,7 @@ export function PasswordField({
           autoComplete={autoComplete}
           required
           minLength={minLength}
+          maxLength={maxLength}
           style={{
             width: "100%",
             height: 42,

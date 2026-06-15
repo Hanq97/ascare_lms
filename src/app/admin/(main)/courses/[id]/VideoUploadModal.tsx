@@ -7,6 +7,7 @@ import { uploadVideoAction } from "@/server/actions/media";
 import { addVideoAction, updateVideoAction } from "@/server/actions/content";
 import { Modal, Btn, Field, Input, inputStyle, T, I } from "@/components/ui";
 import { fmtDur } from "../CourseBits";
+import { VIDEO_ACCEPT, VIDEO_EXT_RE, MAX } from "@/lib/validation";
 
 export type EditVideo = {
   id: string;
@@ -42,8 +43,8 @@ export function VideoUploadModal({
 
   const pick = (f: File) => {
     setError(undefined);
-    if (!/\.(mp4|mov|webm|ogg)$/i.test(f.name)) {
-      setVerr("MP4 / MOV / WebM 形式の動画ファイルを選択してください");
+    if (!VIDEO_EXT_RE.test(f.name)) {
+      setVerr("MP4 / MOV 形式の動画ファイルを選択してください。");
       return;
     }
     setVerr("");
@@ -133,6 +134,7 @@ export function VideoUploadModal({
         <Input
           value={name}
           onChange={(e) => setName(e.target.value)}
+          maxLength={MAX.lessonTitle}
           placeholder="例：食事前の準備と環境づくり"
         />
       </Field>
@@ -140,6 +142,7 @@ export function VideoUploadModal({
         <textarea
           value={detail}
           onChange={(e) => setDetail(e.target.value)}
+          maxLength={MAX.lessonDetail}
           placeholder="このレッスンで学ぶ内容を記入..."
           style={{ ...inputStyle(false), height: 84, padding: "10px 13px", resize: "vertical" }}
         />
@@ -298,14 +301,14 @@ export function VideoUploadModal({
                 <span style={{ color: T.primary, fontWeight: 700 }}>クリックして選択</span>
               </div>
               <div style={{ fontSize: 11.5, color: T.muted3, marginTop: 6 }}>
-                MP4 / MOV / WebM ・ 1ファイル（最大500MB）
+                MP4 / MOV ・ 1ファイル（最大500MB）
               </div>
             </>
           )}
           <input
             ref={ref}
             type="file"
-            accept=".mp4,.mov,.webm,.ogg,video/mp4,video/quicktime,video/webm"
+            accept={VIDEO_ACCEPT}
             style={{ display: "none" }}
             onChange={(e) => {
               if (e.target.files?.length) pick(e.target.files[0]);

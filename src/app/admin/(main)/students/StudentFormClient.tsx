@@ -9,6 +9,7 @@ import {
 } from "@/server/actions/accounts";
 import { Field, Input, inputStyle, T } from "@/components/ui";
 import { FormShell, MailInvite } from "@/components/ui/admin-ui";
+import { MAX } from "@/lib/validation";
 
 type Status = "ACTIVE" | "INACTIVE";
 type Student = {
@@ -82,6 +83,7 @@ export function StudentFormClient({ student, corps }: { student?: Student; corps
             <Input
               value={nameKana}
               onChange={(e) => setNameKana(e.target.value)}
+              maxLength={MAX.romaji}
               placeholder="例：Nguyen Van Anh"
             />
           </Field>
@@ -89,6 +91,7 @@ export function StudentFormClient({ student, corps }: { student?: Student; corps
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
+              maxLength={MAX.kana}
               placeholder="例：グエン・ヴァン・アン"
             />
           </Field>
@@ -108,6 +111,7 @@ export function StudentFormClient({ student, corps }: { student?: Student; corps
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                maxLength={MAX.email}
                 placeholder="例：nguyen.van.anh@example.jp"
               />
             </Field>

@@ -102,10 +102,14 @@ export default async function StudentProgressDetailPage({
               <div style={{ fontSize: 11, color: T.muted2 }}>修了コース</div>
             </div>
             <div style={{ flex: 1, background: T.bg, borderRadius: 9, padding: 11 }}>
+              {/* khớp design: tên ngắn (≤6) hiện luôn; tên dài hiện「所属」to + tên đầy đủ nhỏ dưới */}
+              <div style={{ fontSize: 18, fontWeight: 900 }}>
+                {student.corp.name.length > 6 ? "所属" : student.corp.name}
+              </div>
               <div
                 style={{
-                  fontSize: 13,
-                  fontWeight: 800,
+                  fontSize: 11,
+                  color: T.muted2,
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                   whiteSpace: "nowrap",
@@ -113,7 +117,6 @@ export default async function StudentProgressDetailPage({
               >
                 {student.corp.name}
               </div>
-              <div style={{ fontSize: 11, color: T.muted2 }}>所属法人</div>
             </div>
           </div>
         </Card>

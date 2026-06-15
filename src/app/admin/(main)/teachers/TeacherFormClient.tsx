@@ -9,6 +9,7 @@ import {
 } from "@/server/actions/accounts";
 import { Field, Input, inputStyle, T } from "@/components/ui";
 import { FormShell, MailInvite } from "@/components/ui/admin-ui";
+import { MAX } from "@/lib/validation";
 
 type Status = "ACTIVE" | "INACTIVE";
 type Teacher = {
@@ -67,6 +68,7 @@ export function TeacherFormClient({ teacher }: { teacher?: Teacher }) {
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
+              maxLength={MAX.name}
               placeholder="例：佐藤 健一"
             />
           </Field>
@@ -74,6 +76,7 @@ export function TeacherFormClient({ teacher }: { teacher?: Teacher }) {
             <Input
               value={nameKana}
               onChange={(e) => setNameKana(e.target.value)}
+              maxLength={MAX.kana}
               placeholder="例：サトウ ケンイチ"
             />
           </Field>
@@ -93,6 +96,7 @@ export function TeacherFormClient({ teacher }: { teacher?: Teacher }) {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                maxLength={MAX.email}
                 placeholder="例：k.sato@school.ac.jp"
               />
             </Field>
@@ -102,6 +106,7 @@ export function TeacherFormClient({ teacher }: { teacher?: Teacher }) {
               <Input
                 value={org}
                 onChange={(e) => setOrg(e.target.value)}
+                maxLength={MAX.org}
                 placeholder="例：東京介護専門学校"
               />
             </Field>

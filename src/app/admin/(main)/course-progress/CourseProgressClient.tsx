@@ -90,9 +90,10 @@ export function CourseProgressClient({
   const adminN = courses.filter((c) => c.creatorType === "ADMIN").length;
   const teacherN = courses.filter((c) => c.creatorType === "TEACHER").length;
 
+  const railQl = railQ.trim().toLowerCase();
   const railCourses = courses.filter(
     (c) =>
-      c.title.includes(railQ) &&
+      c.title.toLowerCase().includes(railQl) &&
       (railCreator === "all" || c.creatorType === railCreator) &&
       (!dFrom || c.createdAt >= dFrom) &&
       (!dTo || c.createdAt <= dTo),
@@ -399,7 +400,7 @@ export function CourseProgressClient({
             <Card pad={false} style={{ overflow: "hidden", marginBottom: 18 }}>
               <div style={{ display: "flex", gap: 0 }}>
                 <div style={{ width: 150, flexShrink: 0 }}>
-                  <Banner src={course.thumbnailUrl} title={course.title} h={128} />
+                  <Banner src={course.thumbnailUrl} title={course.title} h={128} fit="contain" />
                 </div>
                 <div style={{ flex: 1, padding: "18px 22px" }}>
                   <div

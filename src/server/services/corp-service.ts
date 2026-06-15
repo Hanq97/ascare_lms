@@ -7,25 +7,34 @@ import { logAudit } from "@/lib/audit";
 import { issuePasswordSetup } from "./token";
 import { ok, fail, type ActionResult, type Err } from "@/lib/result";
 import { isUniqueViolation } from "./db-error";
+import {
+  requiredText,
+  kanaText,
+  optionalText,
+  phoneField,
+  postalField,
+  emailField,
+  MAX,
+} from "@/lib/validation";
 import type { SessionUser } from "@/lib/auth/types";
 
-const EMAIL_TAKEN = "このメールアドレスは既に使用されています。";
+const EMAIL_TAKEN = "このメールアドレスは既に登録されています。";
 
 const ensureAdmin = (a: SessionUser): Err | null =>
   a.role === "ADMIN" ? null : fail("権限がありません。");
 
 const baseFields = {
-  name: z.string().trim().min(1, "法人名を入力してください。"),
-  nameKana: z.string().trim().default(""), // tuỳ chọn (theo design)
-  personName: z.string().trim().min(1, "担当者名を入力してください。"),
-  personKana: z.string().trim().default(""), // tuỳ chọn
-  phone: z.string().trim().default(""), // tuỳ chọn
-  postal: z.string().trim().default(""), // tuỳ chọn
-  address: z.string().trim().default(""), // tuỳ chọn
+  name: requiredText("法人名", MAX.corpName),
+  nameKana: kanaText("法人名（カナ）"), // tuỳ chọn (theo design)
+  personName: requiredText("担当者名", MAX.personName),
+  personKana: kanaText("担当者名（カナ）"), // tuỳ chọn
+  phone: phoneField(), // tuỳ chọn
+  postal: postalField(), // tuỳ chọn
+  address: optionalText("住所", MAX.address), // tuỳ chọn
 };
 const createSchema = z.object({
   ...baseFields,
-  email: z.string().trim().toLowerCase().email("メールアドレスの形式が正しくありません。"),
+  email: emailField(),
 });
 const updateSchema = z.object(baseFields); // email khoá
 

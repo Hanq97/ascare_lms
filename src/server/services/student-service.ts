@@ -6,9 +6,10 @@ import { logAudit } from "@/lib/audit";
 import { issuePasswordSetup } from "./token";
 import { ok, fail, type ActionResult } from "@/lib/result";
 import { isUniqueViolation } from "./db-error";
+import { requiredRomaji, kanaText, emailField, requiredSelect } from "@/lib/validation";
 import type { SessionUser } from "@/lib/auth/types";
 
-const EMAIL_TAKEN = "このメールアドレスは既に使用されています。";
+const EMAIL_TAKEN = "このメールアドレスは既に登録されています。";
 const NO_PERMISSION = "権限がありません。";
 
 /** ADMIN quản mọi 学生; 法人 chỉ 学生 thuộc corp của mình. */
@@ -18,16 +19,16 @@ function canManage(actor: SessionUser, student: Pick<Student, "corpId">): boolea
 }
 
 const createSchema = z.object({
-  nameKana: z.string().trim().min(1, "氏名（ローマ字）を入力してください。"), // ローマ字 bắt buộc
-  name: z.string().trim().default(""), // 氏名カタカナ (tuỳ chọn ở admin form)
-  email: z.string().trim().toLowerCase().email("メールアドレスの形式が正しくありません。"),
-  country: z.string().trim().min(1, "国籍を入力してください。"),
+  nameKana: requiredRomaji("氏名（ローマ字）"), // ローマ字 bắt buộc (lưu ở cột nameKana)
+  name: kanaText("氏名（カタカナ）"), // カタカナ tuỳ chọn (lưu ở cột name)
+  email: emailField(),
+  country: requiredSelect("国籍"),
   corpId: z.string().trim().min(1).optional(), // ADMIN: bắt buộc; CORP: bỏ qua (ép theo session)
 });
 const updateSchema = z.object({
-  nameKana: z.string().trim().min(1, "氏名（ローマ字）を入力してください。"),
-  name: z.string().trim().default(""),
-  country: z.string().trim().min(1),
+  nameKana: requiredRomaji("氏名（ローマ字）"),
+  name: kanaText("氏名（カタカナ）"),
+  country: requiredSelect("国籍"),
 });
 
 export async function createStudent(

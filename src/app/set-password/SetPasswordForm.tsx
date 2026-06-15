@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useActionState } from "react";
 import { setPasswordAction, type SetPasswordState } from "@/server/actions/password";
 import { PasswordField } from "@/components/PasswordField";
+import { PASSWORD_MIN, PASSWORD_MAX } from "@/lib/validation";
 
 const initial: SetPasswordState = {};
 
@@ -69,10 +70,18 @@ export default function SetPasswordForm({ token }: { token: string }) {
           <form action={formAction}>
             <input type="hidden" name="token" value={token} />
             <PasswordField
-              label="新しいパスワード（8文字以上）"
+              label="新しいパスワード（8〜64文字・英字と数字を含む）"
               name="password"
               autoComplete="new-password"
-              minLength={8}
+              minLength={PASSWORD_MIN}
+              maxLength={PASSWORD_MAX}
+            />
+            <PasswordField
+              label="新しいパスワード（確認）"
+              name="passwordConfirm"
+              autoComplete="new-password"
+              minLength={PASSWORD_MIN}
+              maxLength={PASSWORD_MAX}
             />
 
             {!token && (

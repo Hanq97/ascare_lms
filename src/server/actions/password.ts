@@ -10,6 +10,7 @@ import {
   issuePasswordReset,
   type TokenUserType,
 } from "@/server/services/token";
+import { passwordField } from "@/lib/validation";
 
 async function emailOf(userType: TokenUserType, userId: string): Promise<string | null> {
   if (userType === "ADMIN")
@@ -49,10 +50,16 @@ export async function requestOwnPasswordResetAction(): Promise<ActionResult> {
 }
 
 /** Đặt mật khẩu qua link mail (public — không cần đăng nhập). */
-const setSchema = z.object({
-  token: z.string().min(1, "リンクが無効です。"),
-  password: z.string().min(8, "パスワードは8文字以上で入力してください。"),
-});
+const setSchema = z
+  .object({
+    token: z.string().min(1, "リンクが無効です。"),
+    password: passwordField(),
+    passwordConfirm: z.string(),
+  })
+  .refine((d) => d.password === d.passwordConfirm, {
+    message: "新しいパスワード（確認）が一致しません。",
+    path: ["passwordConfirm"],
+  });
 
 export type SetPasswordState = { error?: string; success?: boolean; loginHref?: string };
 
@@ -63,6 +70,7 @@ export async function setPasswordAction(
   const parsed = setSchema.safeParse({
     token: formData.get("token"),
     password: formData.get("password"),
+    passwordConfirm: formData.get("passwordConfirm"),
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "入力内容を確認してください。" };
