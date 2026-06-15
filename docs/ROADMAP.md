@@ -82,29 +82,41 @@ Quy ước: `[ ]` chưa · `[x]` xong · `[~]` đang làm. Mỗi phase xong → 
 - **Test:** storage layer + auth gate (401) verify tự động; player verify trực quan (record/resume/seek/完了)
 > Làm trước D/E vì SC-A10 (upload) và SC-U09 (xem) dùng component này.
 
-### ⬛ Phase D — 管理サイト (13 màn) · **2–11/7** — chia 3 sub (D1/D2/D3)
+### ✅ Phase D — 管理サイト (13 màn) · **2–11/7** — chia 3 sub (D1/D2/D3) · **DONE (test xong 15/6)**
 
-#### ◻ D1 — Dashboard + Account CRUD (4 role) · nhánh `feature/phase-d1-accounts`
-- [ ] SC-A02 Admin Dashboard (5 KPI clickable + 平均進捗 ring) · SC-A03 **Teacher Dashboard** (own-scope)
-- [ ] SC-A04 管理者管理 · SC-A05 **教師管理** (cột số khóa; **xoá chặn nếu còn khóa ERR-104**) · SC-A06 法人管理 (**郵便番号→住所検索**; xoá chặn nếu còn 学生; 無効→cascade) · SC-A07 学生管理 (**search + lọc 法人** + bulk status/delete)
-- [ ] Form thống nhất (FormShell full-screen): create→invite-email, email khoá khi sửa, status 有効/無効
-- [ ] SC-A13 Profile (admin+teacher; teacher sửa 所属教育機関; đổi mật khẩu) · **Nút admin reset mật khẩu** người khác (FR-02)
+> Gộp thêm: edit lesson (SC-A09), dashboard 1:1 design, fix server-component T/I, 入力バリデーション規定, search không phân biệt hoa-thường.
+
+#### ✅ D1 — Dashboard + Account CRUD (4 role) · nhánh `feature/phase-d1-accounts`
+- [x] SC-A02 Admin Dashboard (5 KPI clickable + 平均進捗 ring) · SC-A03 **Teacher Dashboard** (own-scope)
+- [x] SC-A04 管理者管理 · SC-A05 **教師管理** (cột số khóa; **xoá chặn nếu còn khóa ERR-104**) · SC-A06 法人管理 (**郵便番号→住所検索**; xoá chặn nếu còn 学生; 無効→cascade) · SC-A07 学生管理 (**search + lọc 法人** + bulk status/delete)
+- [x] Form thống nhất (FormShell full-screen): create→invite-email, email khoá khi sửa, status 有効/無効
+- [x] SC-A13 Profile (admin+teacher; teacher sửa 所属教育機関; đổi mật khẩu) · **Nút admin reset mật khẩu** người khác (FR-02)
 - **Nối:** BE1 (`accounts.ts`)
 
-#### ◻ D2 — コース・動画 management · nhánh `feature/phase-d2-content`
-- [ ] SC-A08 コース管理: **creator tabs (すべて/管理者/教師)** + search (コース名/内容/作成者) + lọc 公開/非公開 + creator badge
-- [ ] SC-A09 コース詳細+video: reorder · **confirm modal cho 公開/非公開 toggle VÀ xoá lesson** · SC-A10 アップロード (dùng VideoPlayer/F)
+#### ✅ D2 — コース・動画 management · nhánh `feature/phase-d2-content`
+- [x] SC-A08 コース管理: **creator tabs (すべて/管理者/教師)** + search (コース名/内容/作成者) + lọc 公開/非公開 + creator badge
+- [x] SC-A09 コース詳細+video: reorder · **confirm modal cho 公開/非公開 toggle VÀ xoá lesson** · SC-A10 アップロード (dùng VideoPlayer/F) · **edit lesson**
 - **Nối:** BE2 (`content.ts`) + Phase F (upload/VideoPlayer)
 
-#### ◻ D3 — 進捗 views · nhánh `feature/phase-d3-progress`
-- [ ] SC-A11 学生進捗 (admin; search + lọc 法人) · SC-A12 コース別進捗 (admin toàn bộ; teacher chỉ khóa mình)
+#### ✅ D3 — 進捗 views · nhánh `feature/phase-d3-progress`
+- [x] SC-A11 学生進捗 (admin; search + lọc 法人) · SC-A12 コース別進捗 (admin toàn bộ; teacher chỉ khóa mình)
 - **Nối:** BE2 (`progress-admin.ts`)
 
-### ⬛ Phase E — 利用者サイト (11 màn) · **12–18/7**
+### ⬛ Phase E — 利用者サイト (11 màn) · **12–18/7** — chia 3 sub (E1/E2/E3)
+
+> Áp dụng xuyên suốt: form mới dùng `src/lib/validation.ts` (入力バリデーション規定); dashboard/màn server-render import T/I trực tiếp từ tokens.ts/icons.tsx (không qua barrel "use client").
+
+#### ◻ E1 — 法人サイト: dashboard + view · nhánh `feature/phase-e1-corp-view`
 - [ ] SC-U02 法人Dashboard (4 KPI scope corp) · SC-U03 コース一覧 (preview, không ghi tiến độ) · SC-U06 進捗詳細 · SC-U07 法人プロフィール (住所検索, login khoá, đổi MK)
+
+#### ◻ E2 — 法人サイト: 学生管理 · nhánh `feature/phase-e2-students`
 - [ ] SC-U04 学生管理: **search + bulk** + **CSV一括登録** (template→dropzone .csv UTF-8→preview→invite; cột 氏名/カナ/Email/国籍; ERR-005) · SC-U05 学生発行/編集 (modal phát hành; màn riêng khi sửa; email khoá)
-- [ ] SC-U08 学生Home · SC-U09 動画視聴 (VideoPlayer/F) · SC-U10 マイ進捗 (3 nhóm) · SC-U11 学生プロフィール
-- [ ] SC-U01 Login (đã làm Phase C)
+
+#### ◻ E3 — 学生サイト · nhánh `feature/phase-e3-learner`
+- [ ] SC-U08 学生Home · SC-U09 **動画視聴 (VideoPlayer/F — 視聴完了=phương án A, ghi tiến độ thật)** · SC-U10 マイ進捗 (3 nhóm) · SC-U11 学生プロフィール
+- **Lưu ý:** xong E3 thì D3 (admin progress) mới có dữ liệu視聴 thật để verify (giờ test bằng seed).
+
+- [x] SC-U01 Login (đã làm Phase C)
 
 ### ⬛ Phase G — Chất lượng & deploy · **18–20/7**
 - [ ] **E2E (Playwright)** cho 3 luồng dễ hỏng: ① login phân nhánh 4 role · ② 法人無効→cascade 学生無効 · ③ teacher chỉ thấy/xoá khóa của mình
