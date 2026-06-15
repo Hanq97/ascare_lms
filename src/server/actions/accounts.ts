@@ -44,6 +44,10 @@ export async function createCorpAction(input: unknown) {
 export async function updateCorpAction(id: string, input: unknown) {
   return corpSvc.updateCorp(await requireAuth(), id, input);
 }
+// SC-U07 — 法人 tự sửa hồ sơ chính mình (利用者サイト).
+export async function updateOwnCorpProfileAction(input: unknown) {
+  return corpSvc.updateOwnCorp(await requireAuth(), input);
+}
 export async function deleteCorpAction(id: string) {
   return corpSvc.deleteCorp(await requireAuth(), id);
 }

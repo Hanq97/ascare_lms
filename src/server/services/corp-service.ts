@@ -78,6 +78,22 @@ export async function updateCorp(
   return ok();
 }
 
+/** 法人 tự sửa hồ sơ của CHÍNH MÌNH (SC-U07). Email/loginID khoá (không nằm trong updateSchema). */
+export async function updateOwnCorp(actor: SessionUser, input: unknown): Promise<ActionResult> {
+  if (actor.role !== "CORP" || !actor.corpId) return fail("権限がありません。");
+  const p = updateSchema.safeParse(input);
+  if (!p.success) return fail(p.error.issues[0]?.message ?? "入力エラー");
+
+  await prisma.corporation.update({ where: { id: actor.corpId }, data: p.data });
+  await logAudit({
+    actorType: "CORP",
+    actorId: actor.id,
+    action: "UPDATE_OWN_CORP",
+    target: actor.corpId,
+  });
+  return ok();
+}
+
 export async function deleteCorp(actor: SessionUser, id: string): Promise<ActionResult> {
   const deny = ensureAdmin(actor);
   if (deny) return deny;

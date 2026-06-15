@@ -163,3 +163,60 @@ export async function getCourseProgressOverview(
     learners,
   });
 }
+
+// ---------- SC-U02 法人ダッシュボード ----------
+export type CorpDashboardData = {
+  studentCount: number; // 所属学生 (ACTIVE)
+  avg: number; // 平均進捗率
+  finished: number; // 修了者（全コース公開 100%）
+  follow: number; // 要フォロー (<40%)
+  over80: number; // 進捗80%以上
+  under40: number; // 進捗40%未満 (= follow)
+  courseAvg: { id: string; title: string; avg: number }[]; // sắp tăng dần (chậm nhất trước)
+};
+
+/** Tổng hợp tiến độ 学生 trực thuộc 法人 đang đăng nhập (chỉ CORP). */
+export async function getCorpDashboard(
+  actor: SessionUser,
+): Promise<ActionResult<CorpDashboardData>> {
+  if (actor.role !== "CORP" || !actor.corpId) return fail(NO_PERMISSION);
+
+  const [students, courses] = await Promise.all([
+    prisma.student.findMany({
+      where: { corpId: actor.corpId, status: "ACTIVE" },
+      select: { id: true },
+    }),
+    prisma.course.findMany({
+      where: { status: "PUBLISHED" },
+      select: { id: true, title: true },
+      orderBy: { order: "asc" },
+    }),
+  ]);
+
+  const summaries = await Promise.all(students.map((s) => getStudentProgressSummary(s.id)));
+  const overalls = summaries.map((s) => s.overall);
+  const avg = overalls.length
+    ? Math.round(overalls.reduce((a, b) => a + b, 0) / overalls.length)
+    : 0;
+  const finished = summaries.filter((s) => courses.length > 0 && s.done === courses.length).length;
+  const follow = overalls.filter((o) => o < 40).length;
+  const over80 = overalls.filter((o) => o >= 80).length;
+
+  const courseAvg = courses
+    .map((c) => {
+      const pcts = summaries.map((s) => s.courses.find((cc) => cc.courseId === c.id)?.percent ?? 0);
+      const a = pcts.length ? Math.round(pcts.reduce((x, y) => x + y, 0) / pcts.length) : 0;
+      return { id: c.id, title: c.title, avg: a };
+    })
+    .sort((a, b) => a.avg - b.avg);
+
+  return ok({
+    studentCount: students.length,
+    avg,
+    finished,
+    follow,
+    over80,
+    under40: follow,
+    courseAvg,
+  });
+}
