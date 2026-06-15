@@ -4,13 +4,14 @@ import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
 import { ok, fail, type ActionResult, type Err } from "@/lib/result";
 import { canManageCourse } from "./course-service";
+import { requiredText, optionalText, MAX } from "@/lib/validation";
 import type { SessionUser } from "@/lib/auth/types";
 
 const NO_PERMISSION = "権限がありません。";
 
 const videoFields = {
-  title: z.string().trim().min(1, "レッスン名を入力してください。"),
-  detail: z.string().trim().default(""),
+  title: requiredText("レッスン名", MAX.lessonTitle),
+  detail: optionalText("レッスン詳細", MAX.lessonDetail),
   url: z.string().trim().min(1, "動画ファイル/URLを指定してください。"),
   durationSec: z.coerce.number().int().positive("再生時間（秒）を正しく入力してください。"),
   thumbnailUrl: z.string().trim().optional(),

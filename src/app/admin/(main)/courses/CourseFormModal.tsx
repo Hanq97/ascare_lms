@@ -5,6 +5,7 @@ import { useRef, useState, useTransition } from "react";
 import { createCourseAction, updateCourseAction } from "@/server/actions/content";
 import { uploadImageAction } from "@/server/actions/media";
 import { Modal, Btn, Field, Input, inputStyle, T, I } from "@/components/ui";
+import { IMAGE_ACCEPT, IMAGE_EXT_RE, MAX } from "@/lib/validation";
 
 type CourseLite = { id: string; title: string; description: string; thumbnailUrl: string };
 
@@ -33,8 +34,8 @@ export function CourseFormModal({
 
   const onFile = async (f: File) => {
     setError(undefined);
-    if (!/\.(png|jpe?g|webp|gif)$/i.test(f.name)) {
-      setError("PNG / JPG / WebP / GIF の画像を選択してください。");
+    if (!IMAGE_EXT_RE.test(f.name)) {
+      setError("PNG / JPG 形式の画像を選択してください。");
       return;
     }
     setUploading(true);
@@ -94,6 +95,7 @@ export function CourseFormModal({
         <Input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
+          maxLength={MAX.courseTitle}
           placeholder="例：食事介助の基本"
         />
       </Field>
@@ -101,6 +103,7 @@ export function CourseFormModal({
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
+          maxLength={MAX.courseDesc}
           placeholder="このコースで学ぶ内容..."
           style={{ ...inputStyle(false), height: 80, padding: "10px 13px", resize: "vertical" }}
         />
@@ -193,14 +196,14 @@ export function CourseFormModal({
               )}
             </div>
             <div style={{ fontSize: 11.5, color: T.muted3, marginTop: 5 }}>
-              PNG / JPG / WebP（最大8MB）
+              PNG / JPG（最大8MB）
             </div>
           </div>
         )}
         <input
           ref={fileRef}
           type="file"
-          accept="image/png,image/jpeg,image/webp,image/gif"
+          accept={IMAGE_ACCEPT}
           style={{ display: "none" }}
           onChange={(e) => {
             if (e.target.files?.length) void onFile(e.target.files[0]);

@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import { createCorpAction, updateCorpAction, setCorpStatusAction } from "@/server/actions/accounts";
 import { Field, Input, Btn, I, inputStyle, T } from "@/components/ui";
 import { FormShell, MailInvite } from "@/components/ui/admin-ui";
+import { MAX } from "@/lib/validation";
+
+const onlyDigits = (s: string) => s.replace(/\D/g, "");
 
 type Status = "ACTIVE" | "INACTIVE";
 type Corp = {
@@ -29,21 +32,23 @@ export function CorpFormClient({ corp }: { corp?: Corp }) {
     personName: corp?.personName ?? "",
     personKana: corp?.personKana ?? "",
     email: corp?.email ?? "",
-    phone: corp?.phone ?? "",
-    postal: corp?.postal ?? "",
+    phone: onlyDigits(corp?.phone ?? ""), // chuẩn hoá digit-only (seed có thể có gạch)
+    postal: onlyDigits(corp?.postal ?? ""),
     address: corp?.address ?? "",
   });
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setF((p) => ({ ...p, [k]: e.target.value }));
+  const setDigits = (k: "phone" | "postal") => (e: React.ChangeEvent<HTMLInputElement>) =>
+    setF((p) => ({ ...p, [k]: onlyDigits(e.target.value) }));
   const [status, setStatus] = useState<Status>(corp?.status ?? "ACTIVE");
   const [error, setError] = useState<string>();
   const [pending, start] = useTransition();
   const [looking, setLooking] = useState(false);
 
   const lookup = async () => {
-    const zip = f.postal.replace(/[^0-9]/g, "");
+    const zip = onlyDigits(f.postal);
     if (zip.length !== 7) {
-      setError("郵便番号は7桁で入力してください。");
+      setError("郵便番号は半角数字のみ、7桁で入力してください。");
       return;
     }
     setLooking(true);
@@ -98,6 +103,7 @@ export function CorpFormClient({ corp }: { corp?: Corp }) {
             <Input
               value={f.name}
               onChange={set("name")}
+              maxLength={MAX.corpName}
               placeholder="例：さくら介護サービス株式会社"
             />
           </Field>
@@ -105,14 +111,25 @@ export function CorpFormClient({ corp }: { corp?: Corp }) {
             <Input
               value={f.nameKana}
               onChange={set("nameKana")}
+              maxLength={MAX.kana}
               placeholder="サクラカイゴサービス"
             />
           </Field>
           <Field label="担当者名" required>
-            <Input value={f.personName} onChange={set("personName")} placeholder="田中 美咲" />
+            <Input
+              value={f.personName}
+              onChange={set("personName")}
+              maxLength={MAX.personName}
+              placeholder="田中 美咲"
+            />
           </Field>
           <Field label="担当者名（カナ）">
-            <Input value={f.personKana} onChange={set("personKana")} placeholder="タナカ ミサキ" />
+            <Input
+              value={f.personKana}
+              onChange={set("personKana")}
+              maxLength={MAX.kana}
+              placeholder="タナカ ミサキ"
+            />
           </Field>
           <div style={{ gridColumn: "1 / -1" }}>
             <Field
@@ -130,19 +147,28 @@ export function CorpFormClient({ corp }: { corp?: Corp }) {
                 type="email"
                 value={f.email}
                 onChange={set("email")}
+                maxLength={MAX.email}
                 placeholder="info@example.co.jp"
               />
             </Field>
           </div>
-          <Field label="電話番号">
-            <Input value={f.phone} onChange={set("phone")} placeholder="03-1234-5678" />
+          <Field label="電話番号" hint="ハイフンなし・半角数字10〜11桁">
+            <Input
+              value={f.phone}
+              onChange={setDigits("phone")}
+              inputMode="numeric"
+              maxLength={MAX.phone}
+              placeholder="0312345678"
+            />
           </Field>
-          <Field label="郵便番号">
+          <Field label="郵便番号" hint="ハイフンなし・半角数字7桁">
             <div style={{ display: "flex", gap: 9 }}>
               <Input
                 value={f.postal}
-                onChange={set("postal")}
-                placeholder="160-0023"
+                onChange={setDigits("postal")}
+                inputMode="numeric"
+                maxLength={MAX.postal}
+                placeholder="1600023"
                 style={{ flex: 1 }}
               />
               <Btn
@@ -162,6 +188,7 @@ export function CorpFormClient({ corp }: { corp?: Corp }) {
               <Input
                 value={f.address}
                 onChange={set("address")}
+                maxLength={MAX.address}
                 placeholder="郵便番号から自動入力・手動で修正可能"
               />
             </Field>

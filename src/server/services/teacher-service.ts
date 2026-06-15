@@ -7,21 +7,22 @@ import { logAudit } from "@/lib/audit";
 import { issuePasswordSetup } from "./token";
 import { ok, fail, type ActionResult, type Err } from "@/lib/result";
 import { isUniqueViolation } from "./db-error";
+import { requiredText, kanaText, optionalText, emailField, MAX } from "@/lib/validation";
 import type { SessionUser } from "@/lib/auth/types";
 
-const EMAIL_TAKEN = "このメールアドレスは既に使用されています。";
+const EMAIL_TAKEN = "このメールアドレスは既に登録されています。";
 
 const ensureAdmin = (a: SessionUser): Err | null =>
   a.role === "ADMIN" ? null : fail("権限がありません。");
 
 const baseFields = {
-  name: z.string().trim().min(1, "氏名を入力してください。"),
-  nameKana: z.string().trim().default(""),
-  org: z.string().trim().default(""), // 所属教育機関 tuỳ chọn
+  name: requiredText("氏名", MAX.name),
+  nameKana: kanaText("氏名（カナ）"),
+  org: optionalText("所属教育機関", MAX.org), // tuỳ chọn
 };
 const createSchema = z.object({
   ...baseFields,
-  email: z.string().trim().toLowerCase().email("メールアドレスの形式が正しくありません。"),
+  email: emailField(),
 });
 const updateSchema = z.object(baseFields);
 

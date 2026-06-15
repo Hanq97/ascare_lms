@@ -9,6 +9,7 @@ import {
 } from "@/server/actions/accounts";
 import { Field, Input, inputStyle, T } from "@/components/ui";
 import { FormShell, MailInvite } from "@/components/ui/admin-ui";
+import { MAX } from "@/lib/validation";
 
 type Status = "ACTIVE" | "INACTIVE";
 type Admin = { id: string; name: string; nameKana: string; email: string; status: Status } | null;
@@ -59,6 +60,7 @@ export function AdminFormClient({ admin }: { admin?: Admin }) {
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
+              maxLength={MAX.name}
               placeholder="例：田中 一郎"
             />
           </Field>
@@ -66,6 +68,7 @@ export function AdminFormClient({ admin }: { admin?: Admin }) {
             <Input
               value={nameKana}
               onChange={(e) => setNameKana(e.target.value)}
+              maxLength={MAX.kana}
               placeholder="例：タナカ イチロウ"
             />
           </Field>
@@ -85,6 +88,7 @@ export function AdminFormClient({ admin }: { admin?: Admin }) {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                maxLength={MAX.email}
                 placeholder="例：tanaka@ascare.jp"
               />
             </Field>

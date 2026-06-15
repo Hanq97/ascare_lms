@@ -42,11 +42,13 @@ export function Banner({
   title,
   h = 62,
   rounded,
+  fit = "cover",
 }: {
   src?: string | null;
   title: string;
   h?: number;
   rounded?: boolean;
+  fit?: "cover" | "contain"; // contain = thấy trọn ảnh (logo có chữ); cover = lấp đầy (cắt)
 }) {
   const [err, setErr] = useState(false);
   const isReal = !!src && src.startsWith("/api/media/image/");
@@ -64,7 +66,9 @@ export function Banner({
           display: "block",
           width: "100%",
           height: h,
-          objectFit: "cover",
+          objectFit: fit,
+          // contain → có khoảng trống letterbox, nền sáng cho gọn
+          background: fit === "contain" ? "#f3f5f8" : undefined,
           borderRadius: radius,
         }}
       />

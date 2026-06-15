@@ -4,6 +4,7 @@ import type { CourseStatus, CreatorType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
 import { ok, fail, type ActionResult, type Err } from "@/lib/result";
+import { requiredText, optionalText, MAX } from "@/lib/validation";
 import type { SessionUser } from "@/lib/auth/types";
 
 const NO_PERMISSION = "権限がありません。";
@@ -23,8 +24,8 @@ const ensureAdminOrTeacher = (a: SessionUser): Err | null =>
   a.role === "ADMIN" || a.role === "TEACHER" ? null : fail(NO_PERMISSION);
 
 const baseFields = {
-  title: z.string().trim().min(1, "コース名を入力してください。"),
-  description: z.string().trim().default(""),
+  title: requiredText("コース名", MAX.courseTitle),
+  description: optionalText("コース内容", MAX.courseDesc),
   thumbnailUrl: z.string().trim().min(1, "サムネイル画像を指定してください。"),
 };
 const createSchema = z.object(baseFields);

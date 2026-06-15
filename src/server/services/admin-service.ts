@@ -6,21 +6,22 @@ import { logAudit } from "@/lib/audit";
 import { issuePasswordSetup } from "./token";
 import { ok, fail, type ActionResult, type Err } from "@/lib/result";
 import { isUniqueViolation } from "./db-error";
+import { requiredText, kanaText, emailField, MAX } from "@/lib/validation";
 import type { SessionUser } from "@/lib/auth/types";
 
-const EMAIL_TAKEN = "このメールアドレスは既に使用されています。";
+const EMAIL_TAKEN = "このメールアドレスは既に登録されています。";
 
 const ensureAdmin = (a: SessionUser): Err | null =>
   a.role === "ADMIN" ? null : fail("権限がありません。");
 
 const createSchema = z.object({
-  name: z.string().trim().min(1, "氏名を入力してください。"),
-  nameKana: z.string().trim().default(""), // 氏名カナ tuỳ chọn
-  email: z.string().trim().toLowerCase().email("メールアドレスの形式が正しくありません。"),
+  name: requiredText("氏名", MAX.name),
+  nameKana: kanaText("氏名（カナ）"), // tuỳ chọn
+  email: emailField(),
 });
 const updateSchema = z.object({
-  name: z.string().trim().min(1, "氏名を入力してください。"),
-  nameKana: z.string().trim().default(""),
+  name: requiredText("氏名", MAX.name),
+  nameKana: kanaText("氏名（カナ）"),
 });
 
 export async function createAdmin(

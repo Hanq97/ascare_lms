@@ -13,7 +13,8 @@ const EXT_MIME: Record<string, string> = {
   ".mov": "video/quicktime",
 };
 
-export const ALLOWED_VIDEO_EXT = Object.keys(EXT_MIME);
+// Upload chỉ cho phép MP4 / MOV (入力バリデーション規定). EXT_MIME giữ rộng để PHỤC VỤ file cũ.
+export const ALLOWED_VIDEO_EXT = [".mp4", ".mov"];
 
 export function mimeForKey(key: string): string {
   return EXT_MIME[path.extname(key).toLowerCase()] ?? "application/octet-stream";
@@ -71,7 +72,8 @@ const IMG_EXT_MIME: Record<string, string> = {
   ".gif": "image/gif",
 };
 
-export const ALLOWED_IMAGE_EXT = Object.keys(IMG_EXT_MIME);
+// Upload chỉ cho phép PNG / JPG (入力バリデーション規定). IMG_EXT_MIME giữ rộng để PHỤC VỤ file cũ.
+export const ALLOWED_IMAGE_EXT = [".png", ".jpg", ".jpeg"];
 
 export function imageMimeForKey(key: string): string {
   return IMG_EXT_MIME[path.extname(key).toLowerCase()] ?? "application/octet-stream";
